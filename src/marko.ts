@@ -1,8 +1,10 @@
 import * as moo from 'moo'
 
 export function marko(markDown: string) {
+    type block = 'h1' | 'p'
+    type inline = 'b'
     type node = {
-        type: 'doc' | 'h1' | 'b' | 'txt'
+        type: 'doc' | 'txt' | block | inline
         data?: {}
         kids?: node[]
         text?: string
@@ -16,26 +18,34 @@ export function marko(markDown: string) {
 
     lexer.reset(markDown)
 
-    const next = (parent: node) => {
-        const push = (kid: node): node => {
-            if (!parent.kids) throw 'expecting kids'
-            parent.kids.push(kid)
-            return kid
-        }
+    // TODO check if Set improves speed
+    const block = ['h1', 'p']
 
+    const top = () => stack[stack.length - 1]
+    const isBlock = (node: node) => block.indexOf(node.type) > -1
+    const kids = (node: node): node[] => {
+        if (!node.kids) throw 'expecting kids'
+        return node.kids
+    }
+
+    const doc: node = { type: 'doc', kids: [] }
+    const stack: node[] = [doc]
+    while (true) {
         const token = lexer.next()
-        if (!token) return
+        if (!token) break
 
         const actions: { [type: string]: () => void } = {
             h1: () => {
-                next(push({ type: 'h1', kids: [] }))
+                const h1: node = { type: 'h1', kids: [] }
+                kids(top()).push(h1)
+                stack.push(h1)
             }
             , b: () => {
-                next(push({ type: 'b', kids: [] }))
+                kids(top()).push({ type: 'b', kids: [] })
             }
             , txt: () => {
-                push({ type: 'txt', text: token.text })
-                next(parent)
+                if (!isBlock(top())) stack.push({ type: 'p', kids: [] })
+                kids(top()).push({ type: 'txt', text: token.text })
             }
         }
 
@@ -43,7 +53,5 @@ export function marko(markDown: string) {
         if (token.type) actions[token.type]()
     }
 
-    const doc: node = { type: 'doc', kids: [] }
-    next(doc)
     return doc
 }
