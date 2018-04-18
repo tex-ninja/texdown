@@ -14,15 +14,13 @@ export function marko(markDown: string) {
         h1: /^#/
         , b: '**'
         , txt: /[^\n*]+/
+        , NL: { match: /\n/, lineBreaks: true }
     })
 
     lexer.reset(markDown)
 
-    // TODO check if Set improves speed
-    const block = ['h1', 'p']
 
     const top = () => stack[stack.length - 1]
-    const isBlock = (node: node) => block.indexOf(node.type) > -1
     const kids = (node: node): node[] => {
         if (!node.kids) throw 'expecting kids'
         return node.kids
@@ -34,6 +32,7 @@ export function marko(markDown: string) {
         const token = lexer.next()
         if (!token) break
 
+        // TODO check if placing actions outside the loop improves speed
         const actions: { [type: string]: () => void } = {
             h1: () => {
                 const h1: node = { type: 'h1', kids: [] }
@@ -41,17 +40,27 @@ export function marko(markDown: string) {
                 stack.push(h1)
             }
             , b: () => {
-                kids(top()).push({ type: 'b', kids: [] })
+                if (top().type === 'b') return stack.pop()
+
+                const b: node = { type: 'b', kids: [] }
+                kids(top()).push(b)
+                stack.push(b)
             }
             , txt: () => {
-                if (!isBlock(top())) stack.push({ type: 'p', kids: [] })
+                console.log('[txt]')
+                if (top().type === 'doc') {
+                    const p: node = { type: 'p', kids: [] }
+                    kids(doc).push(p)
+                    stack.push(p)
+                }
                 kids(top()).push({ type: 'txt', text: token.text })
             }
         }
 
-        console.log(token)
+        // console.log(token)
         if (token.type) actions[token.type]()
     }
 
+    // console.log('stack', JSON.stringify(stack, null, 2))
     return doc
 }
