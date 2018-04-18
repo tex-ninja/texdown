@@ -1,0 +1,27 @@
+{
+  "name": "marko",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tex-ninja/marko.git"
+  },
+  "author": "Gilad Kutiel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tex-ninja/marko/issues"
+  },
+  "homepage": "https://github.com/tex-ninja/marko#readme",
+  "devDependencies": {
+    "@types/chai": "^4.1.2",
+    "@types/mocha": "^5.0.0",
+    "@types/moo": "^0.4.0",
+    "chai": "^4.1.2",
+    "mocha": "^5.1.1",
+    "moo": "^0.4.3"
+  }
+}
