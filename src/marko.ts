@@ -7,13 +7,21 @@ type type =
     | 'ul' | 'ol' | 'li'
     | 'b' | 'i' | '$' | 'a'
 
-interface node {
+interface kid { }
+
+interface node extends kid {
     type: type
-    kids: (node | leaf)[]
+    kids: kid[]
 }
 
-interface leaf {
+interface leaf extends kid {
     val: string
+}
+
+interface a extends kid {
+    type: 'a'
+    title: string
+    src: string
 }
 
 export function marko(markDown: string) {
@@ -35,9 +43,10 @@ export function marko(markDown: string) {
         , b: '*'
         , i: '_'
         , $: '$'
-        , a: /\[[^\]*]\]\([^)]*\)/
-        , esc: /\\\*|\\_|\\\$|\\\\|^\\#/
-        , txt: /[^\n*_$\\]+/
+        , a: /\[[^\]\n]*\]\([^)\n]*\)/
+        , img: /!\[[^\]\n]*\]\([^)\n]*\)/
+        , esc: /\\\*|\\_|\\\$|\\\\|^\\#|!|\[/
+        , txt: /[^!\[\n*_$\\]+/
         , blank: { match: /^\n/, lineBreaks: true }
         , eol: { match: /\n/, lineBreaks: true }
     })
@@ -58,12 +67,15 @@ export function marko(markDown: string) {
             nodes.push(c)
         }
 
+        const ensureInNode = () => {
+            if (top().type !== 'doc') return
+            const p: node = { type: 'p', kids: [] }
+            doc.kids.push(p)
+            nodes.push(p)
+        }
+
         const text = (str: string) => {
-            if (top().type === 'doc') {
-                const p: node = { type: 'p', kids: [] }
-                doc.kids.push(p)
-                nodes.push(p)
-            }
+            ensureInNode()
             top().kids.push({ val: str })
         }
 
@@ -89,6 +101,18 @@ export function marko(markDown: string) {
             nodes.push(c)
         }
 
+        const extractLink = /.?\[([^\]]*)\]\(([^)]*)\)/
+        const link = (type: 'a' | 'img') => {
+            ensureInNode()
+            const res = extractLink.exec(token.text)
+            if (res === null) throw 'expecting link'
+            top().kids.push({
+                type: type
+                , title: res[1]
+                , src: res[2]
+            })
+        }
+
         const actions: { [type: string]: () => void } = {
             h1: node
             , h2: node
@@ -102,6 +126,8 @@ export function marko(markDown: string) {
             , b: delimiter
             , i: delimiter
             , $: delimiter
+            , a: () => link('a')
+            , img: () => link('img')
             , txt: () => text(token.text)
             , esc: () => text(token.text.substr(1))
             , blank: resetNodes

@@ -56,7 +56,7 @@ describe('marko', () => {
     })
 
     const ul = 'ul\n- i1\n- i2'
-    it(ul, () => {
+    xit(ul, () => {
         expect(marko(ul)).to.eql({
             type: 'doc', kids: [{
                 type: 'p', kids: [{
@@ -72,14 +72,16 @@ describe('marko', () => {
         })
     })
 
-    xit('**\\***', () => {
-        expect(marko('**\\***')).to.eql({
-            type: 'doc'
-            , kids: [{
-                type: 'b'
-                , kids: [{
-                    type: ''
-                    , val: '\\*'
+    const links = '[title1](href) ![title2](img)'
+    it(links, () => {
+        expect(marko(links)).to.eql({
+            type: 'doc', kids: [{
+                type: 'p', kids: [{
+                    type: 'a', title: 'title1', src: 'href'
+                }, {
+                    val: ' '
+                }, {
+                    type: 'img', title: 'title2', src: 'img'
                 }]
             }]
         })
