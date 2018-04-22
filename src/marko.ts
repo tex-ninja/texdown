@@ -1,34 +1,45 @@
 import * as moo from 'moo'
 
-type type = 'doc' | '' | 'h1' | '$$' | 'p' | 'b' | 'i' | '$'
+type type =
+    'doc'
+    | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+    | '$$'
+    | 'ul' | 'ol' | 'li'
+    | 'p'
+    | 'b' | 'i' | '$'
+    | ''
 
-interface node {
+interface nodeOrLeaf { }
+
+interface node extends nodeOrLeaf {
     type: type
-    val: node[] | string
+    val: nodeOrLeaf[]
 }
 
-interface container extends node {
-    val: node[]
-}
-
-interface leaf extends node {
-    type: ''
+interface leaf extends nodeOrLeaf {
     val: string
 }
 
 export function marko(markDown: string) {
-    const doc: container = { type: 'doc', val: [] }
-    const containers: container[] = [doc]
-    const top = () => containers[containers.length - 1]
+    const doc: node = { type: 'doc', val: [] }
+    const nodes: node[] = [doc]
+    const top = () => nodes[nodes.length - 1]
 
     // SPECIAL CHARS \\ * _ $ \n
     const lexer = moo.compile({
-        h1: /^#/
+        h6: /^###### /
+        , h5: /^##### /
+        , h4: /^#### /
+        , h3: /^### /
+        , h2: /^## /
+        , h1: /^# /
         , $$: /^\$\$/
+        , uli: /^\- /
+        , oli: /^\d+\. /
         , b: '*'
         , $: '$'
         , i: '_'
-        , esc: /\\\*|\\_|\\\$|\\\\/
+        , esc: /\\\*|\\_|\\\$|\\\\|^\\#/
         , txt: /[^\n*_$\\]+/
         , blank: { match: /^\n/, lineBreaks: true }
         , eol: { match: /\n/, lineBreaks: true }
@@ -43,42 +54,65 @@ export function marko(markDown: string) {
         const delimiter = () => {
             const type = token.type as type
             const topType = top().type
-            if (topType === type) return containers.pop()
+            if (topType === type) return nodes.pop()
             if (topType === '$' || topType === '$$') return text(token.text)
-            const c: container = { type: type, val: [] }
+            const c: node = { type: type, val: [] }
             top().val.push(c)
-            containers.push(c)
+            nodes.push(c)
         }
 
         const text = (str: string) => {
             if (top().type === 'doc') {
-                const p: container = { type: 'p', val: [] }
+                const p: node = { type: 'p', val: [] }
                 doc.val.push(p)
-                containers.push(p)
+                nodes.push(p)
             }
-            top().val.push({ type: '', val: str })
+            top().val.push({ val: str })
         }
 
-        const resetContainers = () => containers.splice(1, containers.length - 1)
-        const container = () => {
-            const c: container = { type: token.type as type, val: [] }
+        const list = (type: 'ul' | 'ol') => {
+            if (top().type !== type) {
+                resetNodes()
+                const l = { type: type, val: [] }
+                doc.val.push(l)
+                nodes.push(l)
+            }
+            const li: node = { type: 'li', val: [] }
+            top().val.push(li)
+            nodes.push(li)
+            console.log('list', top())
+        }
+
+        const resetNodes = () => nodes.splice(1, nodes.length - 1)
+
+        const node = () => {
+            const c: node = { type: token.type as type, val: [] }
             doc.val.push(c)
-            resetContainers()
-            containers.push(c)
+            resetNodes()
+            nodes.push(c)
         }
 
         const actions: { [type: string]: () => void } = {
-            h1: container
-            , $$: container
+            h1: node
+            , h2: node
+            , h3: node
+            , h4: node
+            , h5: node
+            , h6: node
+            , $$: node
+            , uli: () => list('ul')
+            , oli: () => list('ol')
+            , b: delimiter
+            , i: delimiter
+            , $: delimiter
             , txt: () => text(token.text)
             , esc: () => text(token.text.substr(1))
-            , b: delimiter
-            , $: delimiter
-            , i: delimiter
-            , blank: resetContainers
+            , blank: resetNodes
             , eol: () => {
-                const n = top()
-                if (n.type !== 'doc' && n.type !== 'p') resetContainers()
+                const type = top().type
+                if (type === 'p') return
+                if (type === 'li') return nodes.pop()
+                resetNodes()
             }
         }
 

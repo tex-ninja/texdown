@@ -8,63 +8,65 @@ describe('marko', () => {
         expect(marko(h1)).to.eql({
             type: 'doc', val: [{
                 type: 'h1', val: [{
-                    type: '', val: ' '
-                }, {
                     type: 'b', val: [{
-                        type: '', val: 'h1'
+                        val: 'h1'
                     }]
                 }, {
-                    type: '', val: ' '
+                    val: ' '
                 }, {
                     type: '$', val: [{
-                        type: '', val: 'a^'
+                        val: 'a^'
                     }, {
-                        type: '', val: '*'
+                        val: '*'
                     }, {
-                        type: '', val: ' = b'
+                        val: ' = b'
                     }]
                 }, {
-                    type: '', val: ' '
+                    val: ' '
                 }, {
-                    type: '', val: '*'
+                    val: '*'
                 }, {
-                    type: '', val: '\\'
+                    val: '\\'
                 }]
             }]
         })
     })
 
-    const p = '#h1\np1\n\np2\n#h1'
-    it(p, () => {
+    const p = '# h1\np1\n\np2\n# h1'
+    xit(p, () => {
         expect(marko(p)).to.eql({
             type: 'doc', val: [{
                 type: 'h1', val: [{
-                    type: '', val: 'h1'
+                    val: 'h1'
                 }]
             }, {
                 type: 'p', val: [{
-                    type: '', val: 'p1'
+                    val: 'p1'
                 }]
             }, {
                 type: 'p', val: [{
-                    type: '', val: 'p2'
+                    val: 'p2'
                 }]
             }, {
                 type: 'h1', val: [{
-                    type: '', val: 'h1'
+                    val: 'h1'
                 }]
             }]
         })
     })
 
-    xit('**b**', () => {
-        expect(marko('**b**')).to.eql({
-            type: 'doc'
-            , val: [{
-                type: 'p'
-                , val: [{
-                    type: 'b'
-                    , val: 'b'
+    const ul = 'ul\n- i1\n- i2'
+    it(ul, () => {
+        expect(marko(ul)).to.eql({
+            type: 'doc', val: [{
+                type: 'p', val: [{
+                    val: 'ul'
+                }]
+            }, {
+                type: 'ul', val: [{
+                    type: 'li', val: [{ val: 'i1' }]
+                }, {
+                    type: 'li', val: [{ val: 'i2' }]
                 }]
             }]
         })
