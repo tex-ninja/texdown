@@ -21,7 +21,7 @@ interface leaf extends kid {
 interface a extends kid {
     type: 'a'
     title: string
-    src: string
+    href: string
 }
 
 export function texdown(markDown: string) {
