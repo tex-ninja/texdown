@@ -1,6 +1,7 @@
 import * as moo from 'moo'
 
-type type = 'doc' | 'txt' | 'h1' | 'p' | 'b'
+type type = 'doc' | 'txt' | 'h1' | 'p' | 'b' | '$'
+
 interface node {
     type: type
     val: node[] | string
@@ -25,7 +26,7 @@ export function marko(markDown: string) {
         , b: '*'
         , $: '$'
         , i: '_'
-        , esc: /\\\*|\\_/
+        , esc: /\\\*|\\_|\\\$|\\\\/
         , txt: /[^\n*_$\\]+/
         , blank: { match: /^\n/, lineBreaks: true }
         , eol: { match: /\n/, lineBreaks: true }
@@ -38,15 +39,16 @@ export function marko(markDown: string) {
         if (!token) break
         console.log(token.type)
 
-        const del = () => {
+        const delimiter = () => {
             const type = token.type as type
-            if (top().type === type) containers.pop()
-            else {
-                const c: container = { type: type, val: [] }
-                top().val.push(c)
-                containers.push(c)
-            }
+            const topType = top().type
+            if (topType === type) return containers.pop()
+            if (topType === '$') return text(token.text)
+            const c: container = { type: type, val: [] }
+            top().val.push(c)
+            containers.push(c)
         }
+
         const text = (str: string) => {
             if (top().type === 'doc') {
                 const p: container = { type: 'p', val: [] }
@@ -65,9 +67,9 @@ export function marko(markDown: string) {
             }
             , txt: () => text(token.text)
             , esc: () => text(token.text.substr(1))
-            , b: del
-            , $: del
-            , i: del
+            , b: delimiter
+            , $: delimiter
+            , i: delimiter
         }
 
         if (token.type) actions[token.type]()

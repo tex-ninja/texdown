@@ -3,36 +3,36 @@ import { expect } from 'chai'
 import { marko } from '../src/marko'
 
 describe('marko', () => {
-    const h1 = '# *h1* $a = b$ \\*'
+    const h1 = '# *h1* $a^* = b$ \\*\\\\'
     it(h1, () => {
         expect(marko(h1)).to.eql({
             type: 'doc'
             , val: [{
                 type: 'h1'
                 , val: [{
-                    type: 'txt'
-                    , val: ' '
+                    type: 'txt', val: ' '
                 }, {
                     type: 'b'
                     , val: [{
-                        type: 'txt'
-                        , val: 'h1'
+                        type: 'txt', val: 'h1'
                     }]
                 }, {
-                    type: 'txt'
-                    , val: ' '
+                    type: 'txt', val: ' '
                 }, {
                     type: '$'
                     , val: [{
-                        type: 'txt'
-                        , val: 'a = b'
+                        type: 'txt', val: 'a^'
+                    }, {
+                        type: 'txt', val: '*'
+                    }, {
+                        type: 'txt', val: ' = b'
                     }]
                 }, {
-                    type: 'txt'
-                    , val: ' '
+                    type: 'txt', val: ' '
                 }, {
-                    type: 'txt'
-                    , val: '*'
+                    type: 'txt', val: '*'
+                }, {
+                    type: 'txt', val: '\\'
                 }]
             }]
         })
