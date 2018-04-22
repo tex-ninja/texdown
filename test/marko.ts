@@ -2,13 +2,13 @@ import 'mocha';
 import { expect } from 'chai'
 import { marko } from '../src/marko'
 
-describe('parse', () => {
+describe('marko', () => {
     it('#', () => {
         expect(marko('#')).to.eql({
             type: 'doc'
-            , kids: [{
+            , val: [{
                 type: 'h1'
-                , kids: []
+                , val: []
             }]
         })
     })
@@ -16,22 +16,12 @@ describe('parse', () => {
     it('# h1', () => {
         expect(marko('# h1')).to.eql({
             type: 'doc'
-            , kids: [{
+            , val: [{
                 type: 'h1'
-                , kids: [{
+                , val: [{
                     type: 'txt'
-                    , text: ' h1'
+                    , val: ' h1'
                 }]
-            }]
-        })
-    })
-
-    it('**', () => {
-        expect(marko('**')).to.eql({
-            type: 'doc'
-            , kids: [{
-                type: 'b'
-                , kids: []
             }]
         })
     })
@@ -39,11 +29,11 @@ describe('parse', () => {
     it('**b**', () => {
         expect(marko('**b**')).to.eql({
             type: 'doc'
-            , kids: [{
-                type: 'b'
-                , kids: [{
-                    type: 'txt'
-                    , text: 'b'
+            , val: [{
+                type: 'p'
+                , val: [{
+                    type: 'b'
+                    , val: 'b'
                 }]
             }]
         })
@@ -52,24 +42,37 @@ describe('parse', () => {
     xit('**\\***', () => {
         expect(marko('**\\***')).to.eql({
             type: 'doc'
-            , kids: [{
+            , val: [{
                 type: 'b'
-                , kids: [{
+                , val: [{
                     type: 'txt'
-                    , text: '\\*'
+                    , val: '\\*'
                 }]
             }]
         })
     })
 
-    it('p', () => {
+    xit('p', () => {
         expect(marko('p')).to.eql({
             type: 'doc'
-            , kids: [{
+            , val: [{
                 type: 'p'
-                , kids: [{
+                , val: [{
                     type: 'txt'
-                    , text: 'p'
+                    , val: 'p'
+                }]
+            }]
+        })
+    })
+
+    xit('-', () => {
+        expect(marko('-')).to.eql({
+            type: 'doc'
+            , val: [{
+                type: 'ul'
+                , val: [{
+                    type: 'li'
+                    , val: []
                 }]
             }]
         })

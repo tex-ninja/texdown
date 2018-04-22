@@ -1,33 +1,35 @@
 import * as moo from 'moo'
 
 export function marko(markDown: string) {
-    type block = 'h1' | 'p'
-    type inline = 'b'
+
     type node = {
-        type: 'doc' | 'txt' | block | inline
-        data?: {}
-        kids?: node[]
-        text?: string
+        type: 'doc' | 'txt' | 'h1' | 'p' | 'b'
+        val: node[] | string
     }
 
     const lexer = moo.compile({
         h1: /^#/
-        , b: '**'
-        , txt: /[^\n*]+/
-        , NL: { match: /\n/, lineBreaks: true }
+        , b: /\*\*[^*\n]+?\*\*/
+        , i: /\*[^*\n]+?\*/
+        , a: /\[[^\]]*\]\([^)]*?\)/
+        , ui: /^-/
+        , oi: /^[\d]+\./
+        , txt: /[^\n*]+|\*.*/
+        , blank: { match: /^\n/, lineBreaks: true }
+        , eol: { match: /\n/, lineBreaks: true }
     })
 
     lexer.reset(markDown)
 
+    const doc: { type: string, val: node[] } = { type: 'doc', val: [] }
+    let currentBlock: node | undefined = undefined
 
-    const top = () => stack[stack.length - 1]
-    const kids = (node: node): node[] => {
-        if (!node.kids) throw 'expecting kids'
-        return node.kids
+    const push = (node: node) => {
+        if (!currentBlock) throw 'error: no currentBlock'
+        const kids = currentBlock.val as node[]
+        kids.push(node)
     }
 
-    const doc: node = { type: 'doc', kids: [] }
-    const stack: node[] = [doc]
     while (true) {
         const token = lexer.next()
         if (!token) break
@@ -35,25 +37,26 @@ export function marko(markDown: string) {
         // TODO check if placing actions outside the loop improves speed
         const actions: { [type: string]: () => void } = {
             h1: () => {
-                const h1: node = { type: 'h1', kids: [] }
-                kids(top()).push(h1)
-                stack.push(h1)
+                const h1: node = { type: 'h1', val: [] }
+                doc.val.push(h1)
+                currentBlock = h1
             }
             , b: () => {
-                if (top().type === 'b') return stack.pop()
+                if (!currentBlock) {
+                    const p: node = { type: 'p', val: [] }
+                    doc.val.push(p)
+                    currentBlock = p
+                }
 
-                const b: node = { type: 'b', kids: [] }
-                kids(top()).push(b)
-                stack.push(b)
+                push({
+                    type: 'b'
+                    , val: token.text.substring(2, token.text.length - 2)
+                })
+            }
+            , ui: () => {
             }
             , txt: () => {
-                console.log('[txt]')
-                if (top().type === 'doc') {
-                    const p: node = { type: 'p', kids: [] }
-                    kids(doc).push(p)
-                    stack.push(p)
-                }
-                kids(top()).push({ type: 'txt', text: token.text })
+                push({ type: 'txt', val: token.text })
             }
         }
 
