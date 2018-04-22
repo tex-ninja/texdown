@@ -3,9 +3,6 @@
     "version": "1.0.0",
     "description": "",
     "main": "index.js",
-    "scripts": {
-        "test": "mocha"
-    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/tex-ninja/marko.git"
@@ -22,6 +19,16 @@
         "@types/moo": "^0.4.0",
         "chai": "^4.1.2",
         "mocha": "^5.1.1",
+        "npm-watch": "^0.3.0"
+    },
+    "dependencies": {
         "moo": "^0.4.3"
+    },
+    "watch": {
+        "test": "{src,test}/*.js"
+    },
+    "scripts": {
+        "test": "mocha",
+        "watch": "npm-watch"
     }
 }

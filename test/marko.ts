@@ -3,17 +3,42 @@ import { expect } from 'chai'
 import { marko } from '../src/marko'
 
 describe('marko', () => {
-    it('#', () => {
-        expect(marko('#')).to.eql({
+    const h1 = '# *h1* $a = b$ \\*'
+    it(h1, () => {
+        expect(marko(h1)).to.eql({
             type: 'doc'
             , val: [{
                 type: 'h1'
-                , val: []
+                , val: [{
+                    type: 'txt'
+                    , val: ' '
+                }, {
+                    type: 'b'
+                    , val: [{
+                        type: 'txt'
+                        , val: 'h1'
+                    }]
+                }, {
+                    type: 'txt'
+                    , val: ' '
+                }, {
+                    type: '$'
+                    , val: [{
+                        type: 'txt'
+                        , val: 'a = b'
+                    }]
+                }, {
+                    type: 'txt'
+                    , val: ' '
+                }, {
+                    type: 'txt'
+                    , val: '*'
+                }]
             }]
         })
     })
 
-    it('# h1', () => {
+    xit('# h1', () => {
         expect(marko('# h1')).to.eql({
             type: 'doc'
             , val: [{
@@ -26,7 +51,7 @@ describe('marko', () => {
         })
     })
 
-    it('**b**', () => {
+    xit('**b**', () => {
         expect(marko('**b**')).to.eql({
             type: 'doc'
             , val: [{
