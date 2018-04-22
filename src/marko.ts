@@ -39,7 +39,6 @@ export function marko(markDown: string) {
     while (true) {
         const token = lexer.next()
         if (!token) break
-        console.log(token.type)
 
         const delimiter = () => {
             const type = token.type as type
@@ -60,13 +59,14 @@ export function marko(markDown: string) {
             top().val.push({ type: '', val: str })
         }
 
+        const resetContainers = () => containers.splice(1, containers.length - 1)
         const container = () => {
             const c: container = { type: token.type as type, val: [] }
             doc.val.push(c)
-            containers.splice(1, containers.length - 1)
+            resetContainers()
             containers.push(c)
         }
-        // TODO check if placing actions outside the loop improves speed
+
         const actions: { [type: string]: () => void } = {
             h1: container
             , $$: container
@@ -75,6 +75,11 @@ export function marko(markDown: string) {
             , b: delimiter
             , $: delimiter
             , i: delimiter
+            , blank: resetContainers
+            , eol: () => {
+                const n = top()
+                if (n.type !== 'doc' && n.type !== 'p') resetContainers()
+            }
         }
 
         if (token.type) actions[token.type]()

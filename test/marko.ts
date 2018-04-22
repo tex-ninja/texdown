@@ -4,23 +4,19 @@ import { marko } from '../src/marko'
 
 describe('marko', () => {
     const h1 = '# *h1* $a^* = b$ \\*\\\\'
-    it(h1, () => {
+    xit(h1, () => {
         expect(marko(h1)).to.eql({
-            type: 'doc'
-            , val: [{
-                type: 'h1'
-                , val: [{
+            type: 'doc', val: [{
+                type: 'h1', val: [{
                     type: '', val: ' '
                 }, {
-                    type: 'b'
-                    , val: [{
+                    type: 'b', val: [{
                         type: '', val: 'h1'
                     }]
                 }, {
                     type: '', val: ' '
                 }, {
-                    type: '$'
-                    , val: [{
+                    type: '$', val: [{
                         type: '', val: 'a^'
                     }, {
                         type: '', val: '*'
@@ -38,14 +34,20 @@ describe('marko', () => {
         })
     })
 
-    xit('# h1', () => {
-        expect(marko('# h1')).to.eql({
-            type: 'doc'
-            , val: [{
-                type: 'h1'
-                , val: [{
-                    type: ''
-                    , val: ' h1'
+    const p = '# h1\np1\n\np2'
+    it(p, () => {
+        expect(marko(p)).to.eql({
+            type: 'doc', val: [{
+                type: 'h1', val: [{
+                    type: '', val: ' h1'
+                }]
+            }, {
+                type: 'p', val: [{
+                    type: '', val: 'p1'
+                }]
+            }, {
+                type: 'p', val: [{
+                    type: '', val: 'p2'
                 }]
             }]
         })
