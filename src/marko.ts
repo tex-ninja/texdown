@@ -1,6 +1,6 @@
 import * as moo from 'moo'
 
-type type = 'doc' | 'txt' | 'h1' | 'p' | 'b' | '$'
+type type = 'doc' | '' | 'h1' | '$$' | 'p' | 'b' | 'i' | '$'
 
 interface node {
     type: type
@@ -12,6 +12,7 @@ interface container extends node {
 }
 
 interface leaf extends node {
+    type: ''
     val: string
 }
 
@@ -23,6 +24,7 @@ export function marko(markDown: string) {
     // SPECIAL CHARS \\ * _ $ \n
     const lexer = moo.compile({
         h1: /^#/
+        , $$: /^\$\$/
         , b: '*'
         , $: '$'
         , i: '_'
@@ -43,7 +45,7 @@ export function marko(markDown: string) {
             const type = token.type as type
             const topType = top().type
             if (topType === type) return containers.pop()
-            if (topType === '$') return text(token.text)
+            if (topType === '$' || topType === '$$') return text(token.text)
             const c: container = { type: type, val: [] }
             top().val.push(c)
             containers.push(c)
@@ -55,16 +57,19 @@ export function marko(markDown: string) {
                 doc.val.push(p)
                 containers.push(p)
             }
-            top().val.push({ type: 'txt', val: str })
+            top().val.push({ type: '', val: str })
+        }
+
+        const container = () => {
+            const c: container = { type: token.type as type, val: [] }
+            doc.val.push(c)
+            containers.splice(1, containers.length - 1)
+            containers.push(c)
         }
         // TODO check if placing actions outside the loop improves speed
         const actions: { [type: string]: () => void } = {
-            h1: () => {
-                const h1: container = { type: 'h1', val: [] }
-                doc.val.push(h1)
-                containers.splice(1, containers.length - 1)
-                containers.push(h1)
-            }
+            h1: container
+            , $$: container
             , txt: () => text(token.text)
             , esc: () => text(token.text.substr(1))
             , b: delimiter

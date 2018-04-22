@@ -10,29 +10,29 @@ describe('marko', () => {
             , val: [{
                 type: 'h1'
                 , val: [{
-                    type: 'txt', val: ' '
+                    type: '', val: ' '
                 }, {
                     type: 'b'
                     , val: [{
-                        type: 'txt', val: 'h1'
+                        type: '', val: 'h1'
                     }]
                 }, {
-                    type: 'txt', val: ' '
+                    type: '', val: ' '
                 }, {
                     type: '$'
                     , val: [{
-                        type: 'txt', val: 'a^'
+                        type: '', val: 'a^'
                     }, {
-                        type: 'txt', val: '*'
+                        type: '', val: '*'
                     }, {
-                        type: 'txt', val: ' = b'
+                        type: '', val: ' = b'
                     }]
                 }, {
-                    type: 'txt', val: ' '
+                    type: '', val: ' '
                 }, {
-                    type: 'txt', val: '*'
+                    type: '', val: '*'
                 }, {
-                    type: 'txt', val: '\\'
+                    type: '', val: '\\'
                 }]
             }]
         })
@@ -44,7 +44,7 @@ describe('marko', () => {
             , val: [{
                 type: 'h1'
                 , val: [{
-                    type: 'txt'
+                    type: ''
                     , val: ' h1'
                 }]
             }]
@@ -70,7 +70,7 @@ describe('marko', () => {
             , val: [{
                 type: 'b'
                 , val: [{
-                    type: 'txt'
+                    type: ''
                     , val: '\\*'
                 }]
             }]
@@ -83,7 +83,7 @@ describe('marko', () => {
             , val: [{
                 type: 'p'
                 , val: [{
-                    type: 'txt'
+                    type: ''
                     , val: 'p'
                 }]
             }]
