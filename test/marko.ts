@@ -34,12 +34,12 @@ describe('marko', () => {
         })
     })
 
-    const p = '# h1\np1\n\np2'
+    const p = '#h1\np1\n\np2\n#h1'
     it(p, () => {
         expect(marko(p)).to.eql({
             type: 'doc', val: [{
                 type: 'h1', val: [{
-                    type: '', val: ' h1'
+                    type: '', val: 'h1'
                 }]
             }, {
                 type: 'p', val: [{
@@ -48,6 +48,10 @@ describe('marko', () => {
             }, {
                 type: 'p', val: [{
                     type: '', val: 'p2'
+                }]
+            }, {
+                type: 'h1', val: [{
+                    type: '', val: 'h1'
                 }]
             }]
         })
