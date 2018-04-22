@@ -6,15 +6,15 @@ describe('marko', () => {
     const h1 = '# *h1* $a^* = b$ \\*\\\\'
     xit(h1, () => {
         expect(marko(h1)).to.eql({
-            type: 'doc', val: [{
-                type: 'h1', val: [{
-                    type: 'b', val: [{
+            type: 'doc', kids: [{
+                type: 'h1', kids: [{
+                    type: 'b', kids: [{
                         val: 'h1'
                     }]
                 }, {
                     val: ' '
                 }, {
-                    type: '$', val: [{
+                    type: '$', kids: [{
                         val: 'a^'
                     }, {
                         val: '*'
@@ -35,20 +35,20 @@ describe('marko', () => {
     const p = '# h1\np1\n\np2\n# h1'
     xit(p, () => {
         expect(marko(p)).to.eql({
-            type: 'doc', val: [{
-                type: 'h1', val: [{
+            type: 'doc', kids: [{
+                type: 'h1', kids: [{
                     val: 'h1'
                 }]
             }, {
-                type: 'p', val: [{
+                type: 'p', kids: [{
                     val: 'p1'
                 }]
             }, {
-                type: 'p', val: [{
+                type: 'p', kids: [{
                     val: 'p2'
                 }]
             }, {
-                type: 'h1', val: [{
+                type: 'h1', kids: [{
                     val: 'h1'
                 }]
             }]
@@ -58,15 +58,15 @@ describe('marko', () => {
     const ul = 'ul\n- i1\n- i2'
     it(ul, () => {
         expect(marko(ul)).to.eql({
-            type: 'doc', val: [{
-                type: 'p', val: [{
+            type: 'doc', kids: [{
+                type: 'p', kids: [{
                     val: 'ul'
                 }]
             }, {
-                type: 'ul', val: [{
-                    type: 'li', val: [{ val: 'i1' }]
+                type: 'ul', kids: [{
+                    type: 'li', kids: [{ val: 'i1' }]
                 }, {
-                    type: 'li', val: [{ val: 'i2' }]
+                    type: 'li', kids: [{ val: 'i2' }]
                 }]
             }]
         })
@@ -75,9 +75,9 @@ describe('marko', () => {
     xit('**\\***', () => {
         expect(marko('**\\***')).to.eql({
             type: 'doc'
-            , val: [{
+            , kids: [{
                 type: 'b'
-                , val: [{
+                , kids: [{
                     type: ''
                     , val: '\\*'
                 }]
@@ -88,9 +88,9 @@ describe('marko', () => {
     xit('p', () => {
         expect(marko('p')).to.eql({
             type: 'doc'
-            , val: [{
+            , kids: [{
                 type: 'p'
-                , val: [{
+                , kids: [{
                     type: ''
                     , val: 'p'
                 }]
@@ -101,11 +101,11 @@ describe('marko', () => {
     xit('-', () => {
         expect(marko('-')).to.eql({
             type: 'doc'
-            , val: [{
+            , kids: [{
                 type: 'ul'
-                , val: [{
+                , kids: [{
                     type: 'li'
-                    , val: []
+                    , kids: []
                 }]
             }]
         })

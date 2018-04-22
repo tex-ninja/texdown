@@ -3,25 +3,21 @@ import * as moo from 'moo'
 type type =
     'doc'
     | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
-    | '$$'
+    | '$$' | 'p'
     | 'ul' | 'ol' | 'li'
-    | 'p'
-    | 'b' | 'i' | '$'
-    | ''
+    | 'b' | 'i' | '$' | 'a'
 
-interface nodeOrLeaf { }
-
-interface node extends nodeOrLeaf {
+interface node {
     type: type
-    val: nodeOrLeaf[]
+    kids: (node | leaf)[]
 }
 
-interface leaf extends nodeOrLeaf {
+interface leaf {
     val: string
 }
 
 export function marko(markDown: string) {
-    const doc: node = { type: 'doc', val: [] }
+    const doc: node = { type: 'doc', kids: [] }
     const nodes: node[] = [doc]
     const top = () => nodes[nodes.length - 1]
 
@@ -37,8 +33,9 @@ export function marko(markDown: string) {
         , uli: /^\- /
         , oli: /^\d+\. /
         , b: '*'
-        , $: '$'
         , i: '_'
+        , $: '$'
+        , a: /\[[^\]*]\]\([^)]*\)/
         , esc: /\\\*|\\_|\\\$|\\\\|^\\#/
         , txt: /[^\n*_$\\]+/
         , blank: { match: /^\n/, lineBreaks: true }
@@ -56,29 +53,29 @@ export function marko(markDown: string) {
             const topType = top().type
             if (topType === type) return nodes.pop()
             if (topType === '$' || topType === '$$') return text(token.text)
-            const c: node = { type: type, val: [] }
-            top().val.push(c)
+            const c: node = { type: type, kids: [] }
+            top().kids.push(c)
             nodes.push(c)
         }
 
         const text = (str: string) => {
             if (top().type === 'doc') {
-                const p: node = { type: 'p', val: [] }
-                doc.val.push(p)
+                const p: node = { type: 'p', kids: [] }
+                doc.kids.push(p)
                 nodes.push(p)
             }
-            top().val.push({ val: str })
+            top().kids.push({ val: str })
         }
 
         const list = (type: 'ul' | 'ol') => {
             if (top().type !== type) {
                 resetNodes()
-                const l = { type: type, val: [] }
-                doc.val.push(l)
+                const l = { type: type, kids: [] }
+                doc.kids.push(l)
                 nodes.push(l)
             }
-            const li: node = { type: 'li', val: [] }
-            top().val.push(li)
+            const li: node = { type: 'li', kids: [] }
+            top().kids.push(li)
             nodes.push(li)
             console.log('list', top())
         }
@@ -86,8 +83,8 @@ export function marko(markDown: string) {
         const resetNodes = () => nodes.splice(1, nodes.length - 1)
 
         const node = () => {
-            const c: node = { type: token.type as type, val: [] }
-            doc.val.push(c)
+            const c: node = { type: token.type as type, kids: [] }
+            doc.kids.push(c)
             resetNodes()
             nodes.push(c)
         }
