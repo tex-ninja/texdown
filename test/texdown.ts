@@ -1,11 +1,11 @@
 import 'mocha';
 import { expect } from 'chai'
-import { marko } from '../src/marko'
+import { texdown } from '../src/texdown'
 
 describe('marko', () => {
     const h1 = '# *h1* $a^* = b$ \\*\\\\'
     xit(h1, () => {
-        expect(marko(h1)).to.eql({
+        expect(texdown(h1)).to.eql({
             type: 'doc', kids: [{
                 type: 'h1', kids: [{
                     type: 'b', kids: [{
@@ -34,7 +34,7 @@ describe('marko', () => {
 
     const p = '# h1\np1\n\np2\n# h1'
     xit(p, () => {
-        expect(marko(p)).to.eql({
+        expect(texdown(p)).to.eql({
             type: 'doc', kids: [{
                 type: 'h1', kids: [{
                     val: 'h1'
@@ -57,7 +57,7 @@ describe('marko', () => {
 
     const ul = 'ul\n- i1\n- i2'
     xit(ul, () => {
-        expect(marko(ul)).to.eql({
+        expect(texdown(ul)).to.eql({
             type: 'doc', kids: [{
                 type: 'p', kids: [{
                     val: 'ul'
@@ -74,7 +74,7 @@ describe('marko', () => {
 
     const links = '[title1](href) ![title2](img)'
     it(links, () => {
-        expect(marko(links)).to.eql({
+        expect(texdown(links)).to.eql({
             type: 'doc', kids: [{
                 type: 'p', kids: [{
                     type: 'a', title: 'title1', src: 'href'
@@ -88,7 +88,7 @@ describe('marko', () => {
     })
 
     xit('p', () => {
-        expect(marko('p')).to.eql({
+        expect(texdown('p')).to.eql({
             type: 'doc'
             , kids: [{
                 type: 'p'
@@ -101,7 +101,7 @@ describe('marko', () => {
     })
 
     xit('-', () => {
-        expect(marko('-')).to.eql({
+        expect(texdown('-')).to.eql({
             type: 'doc'
             , kids: [{
                 type: 'ul'

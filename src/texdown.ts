@@ -24,7 +24,7 @@ interface a extends kid {
     src: string
 }
 
-export function marko(markDown: string) {
+export function texdown(markDown: string) {
     const doc: node = { type: 'doc', kids: [] }
     const nodes: node[] = [doc]
     const top = () => nodes[nodes.length - 1]
