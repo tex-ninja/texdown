@@ -1,6 +1,6 @@
 import * as moo from 'moo'
 
-type type =
+type block =
     'doc'
     | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
     | '$$' | 'p'
@@ -8,30 +8,73 @@ type type =
     | 'b' | 'i' | '$' | 'a'
     | 'br'
 
-interface kid { }
+type inline = ''
 
-interface node extends kid {
+interface kid { }
+interface typedKid extends kid {
     type: type
+}
+
+function isTypedKid(kid: kid): kid is typedKid {
+    return kid.hasOwnProperty('type')
+}
+
+interface node extends typedKid {
     kids: kid[]
+}
+
+interface br extends typedKid {
+    type: 'br'
+}
+
+function isBr(kid: kid): kid is br {
+    return isTypedKid(kid) && kid.type === 'br'
+}
+
+
+interface a extends typedKid {
+    type: 'a'
+    title: string
+    href: string
+}
+
+function isA(kid: kid): kid is a {
+    return isTypedKid(kid) && kid.type === 'a'
+}
+
+interface $ extends kid {
+    type: '$'
+    val: string
+}
+
+function is$(kid: kid): kid is $ {
+    return isTypedKid(kid) && kid.type === '$'
+}
+
+interface $$ extends kid {
+    type: '$$'
+    val: string
+}
+
+function is$$(kid: kid): kid is $$ {
+    return isTypedKid(kid) && kid.type === '$$'
 }
 
 interface leaf extends kid {
     val: string
 }
 
-interface br extends kid {
-    type: 'br'
+function isLeaf(kid: kid): kid is leaf {
+    return !kid.hasOwnProperty('type')
 }
 
-interface a extends kid {
-    type: 'a'
-    title: string
-    href: string
+export interface visitor {
+    txt: (val: string, parent: any) => any
 }
 
-interface $ extends kid {
-    type: '$' | '$$'
-    val: string
+export function visit(ast: kid, visitor: visitor, parent?: kid) {
+    if (isLeaf(ast)) return visitor.txt(ast.val, parent)
+
 }
 
 export function texdown(markDown: string) {
@@ -110,6 +153,7 @@ export function texdown(markDown: string) {
         }
 
         const extractLink = /.?\[([^\]]*)\]\(([^)]*)\)/
+
         const link = (type: 'a' | 'img') => {
             ensureInNode()
             const res = extractLink.exec(token.text)
@@ -117,7 +161,7 @@ export function texdown(markDown: string) {
             top().kids.push({
                 type: type
                 , title: res[1]
-                , src: res[2]
+                , href: res[2]
             })
         }
 
