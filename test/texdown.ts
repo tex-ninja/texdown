@@ -100,4 +100,15 @@ describe('marko', () => {
             }]
         })
     })
+
+    const txt = '[]'
+    it(txt, () => {
+        expect(texdown(txt)).to.eql({
+            type: 'doc', kids: [{
+                type: 'p', kids: [{
+                    val: '[]'
+                }]
+            }]
+        })
+    })
 })
