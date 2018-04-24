@@ -4,7 +4,7 @@ import { texdown } from '../src/texdown'
 
 describe('marko', () => {
     const h1 = '# *h1* $a^* = b$ \\*\\\\'
-    xit(h1, () => {
+    it(h1, () => {
         expect(texdown(h1)).to.eql({
             type: 'doc', kids: [{
                 type: 'h1', kids: [{
@@ -32,20 +32,32 @@ describe('marko', () => {
         })
     })
 
-    const p = '# h1\np1\n\np2\n# h1'
-    xit(p, () => {
+    const p = '# h1\np1l1\np1l2\n\np2l1\n# h1'
+    it(p, () => {
         expect(texdown(p)).to.eql({
             type: 'doc', kids: [{
                 type: 'h1', kids: [{
                     val: 'h1'
                 }]
             }, {
-                type: 'p', kids: [{
-                    val: 'p1'
-                }]
+                type: 'br'
             }, {
                 type: 'p', kids: [{
-                    val: 'p2'
+                    val: 'p1l1'
+                }, {
+                    type: 'br'
+                }, {
+                    val: 'p1l2'
+                }, {
+                    type: 'br'
+                }]
+            }, {
+                type: 'br'
+            }, {
+                type: 'p', kids: [{
+                    val: 'p2l1'
+                }, {
+                    type: 'br'
                 }]
             }, {
                 type: 'h1', kids: [{
@@ -56,11 +68,13 @@ describe('marko', () => {
     })
 
     const ul = 'ul\n- i1\n- i2'
-    xit(ul, () => {
+    it(ul, () => {
         expect(texdown(ul)).to.eql({
             type: 'doc', kids: [{
                 type: 'p', kids: [{
                     val: 'ul'
+                }, {
+                    type: 'br'
                 }]
             }, {
                 type: 'ul', kids: [{
@@ -82,32 +96,6 @@ describe('marko', () => {
                     val: ' '
                 }, {
                     type: 'img', title: 'title2', src: 'img'
-                }]
-            }]
-        })
-    })
-
-    xit('p', () => {
-        expect(texdown('p')).to.eql({
-            type: 'doc'
-            , kids: [{
-                type: 'p'
-                , kids: [{
-                    type: ''
-                    , val: 'p'
-                }]
-            }]
-        })
-    })
-
-    xit('-', () => {
-        expect(texdown('-')).to.eql({
-            type: 'doc'
-            , kids: [{
-                type: 'ul'
-                , kids: [{
-                    type: 'li'
-                    , kids: []
                 }]
             }]
         })

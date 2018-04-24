@@ -6,6 +6,7 @@ type type =
     | '$$' | 'p'
     | 'ul' | 'ol' | 'li'
     | 'b' | 'i' | '$' | 'a'
+    | 'br'
 
 interface kid { }
 
@@ -16,6 +17,10 @@ interface node extends kid {
 
 interface leaf extends kid {
     val: string
+}
+
+interface br extends kid {
+    type: 'br'
 }
 
 interface a extends kid {
@@ -130,12 +135,17 @@ export function texdown(markDown: string) {
             , img: () => link('img')
             , txt: () => text(token.text)
             , esc: () => text(token.text.substr(1))
-            , blank: resetNodes
+            , blank: () => {
+                resetNodes()
+                doc.kids.push({ type: 'br' })
+            }
             , eol: () => {
+                const br = { type: 'br' }
                 const type = top().type
-                if (type === 'p') return
+                if (type === 'p') return top().kids.push(br)
                 if (type === 'li') return nodes.pop()
                 resetNodes()
+                doc.kids.push(br)
             }
         }
 
