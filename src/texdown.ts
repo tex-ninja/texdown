@@ -1,36 +1,36 @@
 import * as moo from 'moo'
 
-type type =
+export type type =
     'doc'
     | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
     | 'p'
     | 'ul' | 'ol' | 'li'
     | 'b' | 'i'
 
-type typeVal = '' | '$$' | '$'
-type typeLink = 'a' | 'img'
+export type typeVal = '' | '$$' | '$'
+export type typeLink = 'a' | 'img'
 
-interface parent {
+export interface parent {
     type: type
     kids: node[]
 }
 
-interface br {
+export interface br {
     type: 'br'
 }
 
-interface val {
+export interface val {
     type: typeVal
     val: string
 }
 
-interface link {
+export interface link {
     type: typeLink
     title: string
     href: string
 }
 
-type node = parent | val | link | br
+export type node = parent | val | link | br
 
 function isVal(node: node): node is val {
     return node.type === ''
@@ -42,15 +42,15 @@ function isLink(node: node): node is link {
     return node.type === 'a' || node.type === 'img'
 }
 
-type vVal<T> = {
+export type vVal<T> = {
     [key in typeVal]: (val: string, parent: T) => void
 }
 
-type vBr<T> = {
+export type vBr<T> = {
     [key in 'br']: (parent: T) => void
 }
 
-type vLink<T> = {
+export type vLink<T> = {
     [key in typeLink]: (title: string, href: string, parent: T) => void
 }
 
