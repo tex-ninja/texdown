@@ -194,9 +194,9 @@ export function texdown(markDown: string) {
                 doc.kids.push({ type: 'br' })
             }
             , eol: () => {
-                top().kids.push({ type: 'br' })
                 const topType = top().type
                 if (topType !== 'p' && topType !== 'div') ps.pop()
+                top().kids.push({ type: 'br' })
             }
         }
 
