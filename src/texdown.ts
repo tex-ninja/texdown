@@ -1,7 +1,7 @@
 import * as moo from 'moo'
 
-export type type =
-    'doc'
+export type typeElement =
+    'div'
     | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
     | 'p'
     | 'ul' | 'ol' | 'li'
@@ -11,7 +11,7 @@ export type typeVal = '' | '$$' | '$'
 export type typeLink = 'a' | 'img'
 
 export interface parent {
-    type: type
+    type: typeElement
     kids: node[]
 }
 
@@ -54,22 +54,26 @@ export type vLink<T> = {
     [key in typeLink]: (title: string, href: string, parent: T) => void
 }
 
+export interface vElement<T> {
+    element: (type: typeElement) => T
+}
+
 export type visitor<T> =
     vVal<T>
     & vBr<T>
     & vLink<T>
-    & { [key in type]: (parent: T) => T }
+    & vElement<T>
 
 export function visit<T>(node: node, visitor: visitor<T>, parent: T) {
     if (node.type === 'br') return visitor.br(parent)
     if (isVal(node)) return visitor[node.type](node.val, parent)
     if (isLink(node)) return visitor[node.type](node.title, node.href, parent)
-    const newParent = visitor[node.type](parent)
+    const newParent = visitor.element(node.type)
     node.kids.forEach(k => visit(k, visitor, newParent))
 }
 
 export function texdown(markDown: string) {
-    const doc: parent = { type: 'doc', kids: [] }
+    const doc: parent = { type: 'div', kids: [] }
     const ps: parent[] = [doc]
     const top = () => ps[ps.length - 1]
 
@@ -102,7 +106,7 @@ export function texdown(markDown: string) {
         if (!token) break
 
         const delimiter = () => {
-            const type = token.type as type
+            const type = token.type as typeElement
             if (top().type === type) return ps.pop()
             const c = { type: type, kids: [] }
             top().kids.push(c)
@@ -110,7 +114,7 @@ export function texdown(markDown: string) {
         }
 
         const ensureInNode = () => {
-            if (top().type !== 'doc') return
+            if (top().type !== 'div') return
             const p: parent = { type: 'p', kids: [] }
             doc.kids.push(p)
             ps.push(p)
@@ -136,7 +140,7 @@ export function texdown(markDown: string) {
         const resetNodes = () => ps.splice(1, ps.length - 1)
 
         const node = () => {
-            const c: node = { type: token.type as type, kids: [] }
+            const c: node = { type: token.type as typeElement, kids: [] }
             doc.kids.push(c)
             resetNodes()
             ps.push(c)

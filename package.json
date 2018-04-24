@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "description": "",
     "main": "src/texdown.js",
+    "types": "src/texdown.d.ts",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/tex-ninja/marko.git"
