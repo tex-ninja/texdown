@@ -55,8 +55,8 @@ export function texdown(markDown: string) {
         , $: /\$(?:\\\$|[^\n$])+\$/
         , a: /\[[^\]\n]*\]\([^)\n]*\)/
         , img: /!\[[^\]\n]*\]\([^)\n]*\)/
-        , txt: /[^!\n*_$\\]+|[!*_$]/
         , esc: /\\\*|\\_|\\\$|\\\\|^\\#/
+        , txt: /[^!\n*_$\\]+|[!*_$\\]/
         , blank: { match: /^\n/, lineBreaks: true }
         , eol: { match: /\n/, lineBreaks: true }
     })

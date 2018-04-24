@@ -116,4 +116,17 @@ describe('texdown', () => {
             }]
         })
     })
+
+    const notmath = '$\\'
+    it(notmath, () => {
+        expect(texdown(notmath)).to.eql({
+            type: 'doc', kids: [{
+                type: 'p', kids: [{
+                    val: '$'
+                }, {
+                    val: '\\'
+                }]
+            }]
+        })
+    })
 })
