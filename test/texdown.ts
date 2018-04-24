@@ -9,18 +9,18 @@ describe('texdown', () => {
             type: 'doc', kids: [{
                 type: 'h1', kids: [{
                     type: 'b', kids: [{
-                        val: 'h1'
+                        type: '', val: 'h1'
                     }]
                 }, {
-                    val: ' '
+                    type: '', val: ' '
                 }, {
                     type: '$', val: 'a^* = b'
                 }, {
-                    val: ' '
+                    type: '', val: ' '
                 }, {
-                    val: '*'
+                    type: '', val: '*'
                 }, {
-                    val: '\\'
+                    type: '', val: '\\'
                 }]
             }]
         })
@@ -31,17 +31,17 @@ describe('texdown', () => {
         expect(texdown(p)).to.eql({
             type: 'doc', kids: [{
                 type: 'h1', kids: [{
-                    val: 'h1'
+                    type: '', val: 'h1'
                 }]
             }, {
                 type: 'br'
             }, {
                 type: 'p', kids: [{
-                    val: 'p1l1'
+                    type: '', val: 'p1l1'
                 }, {
                     type: 'br'
                 }, {
-                    val: 'p1l2'
+                    type: '', val: 'p1l2'
                 }, {
                     type: 'br'
                 }]
@@ -49,13 +49,13 @@ describe('texdown', () => {
                 type: 'br'
             }, {
                 type: 'p', kids: [{
-                    val: 'p2l1'
+                    type: '', val: 'p2l1'
                 }, {
                     type: 'br'
                 }]
             }, {
                 type: 'h1', kids: [{
-                    val: 'h1'
+                    type: '', val: 'h1'
                 }]
             }]
         })
@@ -66,15 +66,15 @@ describe('texdown', () => {
         expect(texdown(ul)).to.eql({
             type: 'doc', kids: [{
                 type: 'p', kids: [{
-                    val: 'ul'
+                    type: '', val: 'ul'
                 }, {
                     type: 'br'
                 }]
             }, {
                 type: 'ul', kids: [{
-                    type: 'li', kids: [{ val: 'i1' }]
+                    type: 'li', kids: [{ type: '', val: 'i1' }]
                 }, {
-                    type: 'li', kids: [{ val: 'i2' }]
+                    type: 'li', kids: [{ type: '', val: 'i2' }]
                 }]
             }]
         })
@@ -85,11 +85,11 @@ describe('texdown', () => {
         expect(texdown(links)).to.eql({
             type: 'doc', kids: [{
                 type: 'p', kids: [{
-                    type: 'a', title: 'title1', src: 'href'
+                    type: 'a', title: 'title1', href: 'href'
                 }, {
-                    val: ' '
+                    type: '', val: ' '
                 }, {
-                    type: 'img', title: 'title2', src: 'img'
+                    type: 'img', title: 'title2', href: 'img'
                 }]
             }]
         })
@@ -100,7 +100,7 @@ describe('texdown', () => {
         expect(texdown(txt)).to.eql({
             type: 'doc', kids: [{
                 type: 'p', kids: [{
-                    val: '[]'
+                    type: '', val: '[]'
                 }]
             }]
         })
@@ -131,12 +131,11 @@ describe('texdown', () => {
         expect(texdown(notmath)).to.eql({
             type: 'doc', kids: [{
                 type: 'p', kids: [{
-                    val: '$'
+                    type: '', val: '$'
                 }, {
-                    val: '\\'
+                    type: '', val: '\\'
                 }]
             }]
         })
     })
-
 })

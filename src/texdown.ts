@@ -1,86 +1,58 @@
 import * as moo from 'moo'
 
-type block =
+type type =
     'doc'
     | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
-    | '$$' | 'p'
+    | 'p'
     | 'ul' | 'ol' | 'li'
-    | 'b' | 'i' | '$' | 'a'
-    | 'br'
+    | 'b' | 'i'
 
-type inline = ''
 
-interface kid { }
-interface typedKid extends kid {
+interface parent {
     type: type
+    kids: node[]
 }
 
-function isTypedKid(kid: kid): kid is typedKid {
-    return kid.hasOwnProperty('type')
-}
-
-interface node extends typedKid {
-    kids: kid[]
-}
-
-interface br extends typedKid {
+interface br {
     type: 'br'
 }
 
-function isBr(kid: kid): kid is br {
-    return isTypedKid(kid) && kid.type === 'br'
+interface val {
+    type: '' | '$$' | '$'
+    val: string
 }
 
-
-interface a extends typedKid {
-    type: 'a'
+interface link {
+    type: 'a' | 'img'
     title: string
     href: string
 }
 
-function isA(kid: kid): kid is a {
-    return isTypedKid(kid) && kid.type === 'a'
+type node = parent | val | link | br
+
+function isVal(node: node): node is val {
+    return node.type === ''
+        || node.type === '$$'
+        || node.type === '$'
 }
 
-interface $ extends kid {
-    type: '$'
-    val: string
-}
-
-function is$(kid: kid): kid is $ {
-    return isTypedKid(kid) && kid.type === '$'
-}
-
-interface $$ extends kid {
-    type: '$$'
-    val: string
-}
-
-function is$$(kid: kid): kid is $$ {
-    return isTypedKid(kid) && kid.type === '$$'
-}
-
-interface leaf extends kid {
-    val: string
-}
-
-function isLeaf(kid: kid): kid is leaf {
-    return !kid.hasOwnProperty('type')
+function isLink(node: node): node is link {
+    return node.type === 'a' || node.type === 'img'
 }
 
 export interface visitor {
     txt: (val: string, parent: any) => any
 }
 
-export function visit(ast: kid, visitor: visitor, parent?: kid) {
-    if (isLeaf(ast)) return visitor.txt(ast.val, parent)
+export function visit(ast: node, visitor: visitor, parent?: node) {
+    // if (isLeaf(ast)) return visitor.txt(ast.val, parent)
 
 }
 
 export function texdown(markDown: string) {
-    const doc: node = { type: 'doc', kids: [] }
-    const nodes: node[] = [doc]
-    const top = () => nodes[nodes.length - 1]
+    const doc: parent = { type: 'doc', kids: [] }
+    const ps: parent[] = [doc]
+    const top = () => ps[ps.length - 1]
 
     // SPECIAL CHARS \\ * _ $ \n
     const lexer = moo.compile({
@@ -112,22 +84,22 @@ export function texdown(markDown: string) {
 
         const delimiter = () => {
             const type = token.type as type
-            if (top().type === type) return nodes.pop()
-            const c: node = { type: type, kids: [] }
+            if (top().type === type) return ps.pop()
+            const c = { type: type, kids: [] }
             top().kids.push(c)
-            nodes.push(c)
+            ps.push(c)
         }
 
         const ensureInNode = () => {
             if (top().type !== 'doc') return
-            const p: node = { type: 'p', kids: [] }
+            const p: parent = { type: 'p', kids: [] }
             doc.kids.push(p)
-            nodes.push(p)
+            ps.push(p)
         }
 
         const text = (str: string) => {
             ensureInNode()
-            top().kids.push({ val: str })
+            top().kids.push({ type: '', val: str })
         }
 
         const list = (type: 'ul' | 'ol') => {
@@ -135,21 +107,20 @@ export function texdown(markDown: string) {
                 resetNodes()
                 const l = { type: type, kids: [] }
                 doc.kids.push(l)
-                nodes.push(l)
+                ps.push(l)
             }
             const li: node = { type: 'li', kids: [] }
             top().kids.push(li)
-            nodes.push(li)
-            console.log('list', top())
+            ps.push(li)
         }
 
-        const resetNodes = () => nodes.splice(1, nodes.length - 1)
+        const resetNodes = () => ps.splice(1, ps.length - 1)
 
         const node = () => {
             const c: node = { type: token.type as type, kids: [] }
             doc.kids.push(c)
             resetNodes()
-            nodes.push(c)
+            ps.push(c)
         }
 
         const extractLink = /.?\[([^\]]*)\]\(([^)]*)\)/
@@ -200,19 +171,17 @@ export function texdown(markDown: string) {
                 doc.kids.push({ type: 'br' })
             }
             , eol: () => {
-                const br = { type: 'br' }
+                const br: br = { type: 'br' }
                 const type = top().type
                 if (type === 'p') return top().kids.push(br)
-                if (type === 'li') return nodes.pop()
+                if (type === 'li') return ps.pop()
                 resetNodes()
                 doc.kids.push(br)
             }
         }
 
-        // console.log('[TOKEN]', token)
         if (token.type) actions[token.type]()
     }
 
-    console.log('doc', JSON.stringify(doc, null, 2))
     return doc
 }
