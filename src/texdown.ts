@@ -7,6 +7,8 @@ type type =
     | 'ul' | 'ol' | 'li'
     | 'b' | 'i'
 
+type typeVal = '' | '$$' | '$'
+type typeLink = 'a' | 'img'
 
 interface parent {
     type: type
@@ -18,12 +20,12 @@ interface br {
 }
 
 interface val {
-    type: '' | '$$' | '$'
+    type: typeVal
     val: string
 }
 
 interface link {
-    type: 'a' | 'img'
+    type: typeLink
     title: string
     href: string
 }
@@ -40,13 +42,30 @@ function isLink(node: node): node is link {
     return node.type === 'a' || node.type === 'img'
 }
 
-export interface visitor {
-    txt: (val: string, parent: any) => any
+type vVal<T> = {
+    [key in typeVal]: (val: string, parent: T) => void
 }
 
-export function visit(ast: node, visitor: visitor, parent?: node) {
-    // if (isLeaf(ast)) return visitor.txt(ast.val, parent)
+type vBr<T> = {
+    [key in 'br']: (parent: T) => void
+}
 
+type vLink<T> = {
+    [key in typeLink]: (title: string, href: string, parent: T) => void
+}
+
+export type visitor<T> =
+    vVal<T>
+    & vBr<T>
+    & vLink<T>
+    & { [key in type]: (parent: T) => T }
+
+export function visit<T>(node: node, visitor: visitor<T>, parent: T) {
+    if (node.type === 'br') return visitor.br(parent)
+    if (isVal(node)) return visitor[node.type](node.val, parent)
+    if (isLink(node)) return visitor[node.type](node.title, node.href, parent)
+    const newParent = visitor[node.type](parent)
+    node.kids.forEach(k => visit(k, visitor, newParent))
 }
 
 export function texdown(markDown: string) {
