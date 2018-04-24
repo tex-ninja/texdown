@@ -30,7 +30,7 @@ interface a extends kid {
 }
 
 interface $ extends kid {
-    type: '$'
+    type: '$' | '$$'
     val: string
 }
 
@@ -47,14 +47,14 @@ export function texdown(markDown: string) {
         , h3: /^### /
         , h2: /^## /
         , h1: /^# /
-        , $$: /^\$\$/
         , uli: /^\- /
         , oli: /^\d+\. /
         , b: '*'
         , i: '_'
-        , $: /\$(?:\\\$|[^\n$])+\$/
         , a: /\[[^\]\n]*\]\([^)\n]*\)/
         , img: /!\[[^\]\n]*\]\([^)\n]*\)/
+        , $$: /\$\$(?:\\\$|[^$])+\$\$/
+        , $: /\$(?:\\\$|[^\n$])+\$/
         , esc: /\\\*|\\_|\\\$|\\\\|^\\#/
         , txt: /[^!\n*_$\\]+|[!*_$\\]/
         , blank: { match: /^\n/, lineBreaks: true }
@@ -128,11 +128,17 @@ export function texdown(markDown: string) {
             , h4: node
             , h5: node
             , h6: node
-            , $$: node
             , uli: () => list('ul')
             , oli: () => list('ol')
             , b: delimiter
             , i: delimiter
+            , $$: () => {
+                const tex = token.text.substring(2, token.text.length - 2)
+                top().kids.push({
+                    type: '$$'
+                    , val: tex
+                })
+            }
             , $: () => {
                 ensureInNode()
                 const tex = token.text.substring(1, token.text.length - 1)

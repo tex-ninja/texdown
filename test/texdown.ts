@@ -117,6 +117,15 @@ describe('texdown', () => {
         })
     })
 
+    const $$ = '$$ a \\leq b $$'
+    it($$, () => {
+        expect(texdown($$)).to.eql({
+            type: 'doc', kids: [{
+                type: '$$', val: ' a \\leq b '
+            }]
+        })
+    })
+
     const notmath = '$\\'
     it(notmath, () => {
         expect(texdown(notmath)).to.eql({
@@ -129,4 +138,5 @@ describe('texdown', () => {
             }]
         })
     })
+
 })
