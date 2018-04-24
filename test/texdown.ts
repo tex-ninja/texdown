@@ -32,9 +32,9 @@ describe('texdown', () => {
             type: 'div', kids: [{
                 type: 'h1', kids: [{
                     type: '', val: 'h1'
+                }, {
+                    type: 'br'
                 }]
-            }, {
-                type: 'br'
             }, {
                 type: 'p', kids: [{
                     type: '', val: 'p1l1'
@@ -72,9 +72,15 @@ describe('texdown', () => {
                 }]
             }, {
                 type: 'ul', kids: [{
-                    type: 'li', kids: [{ type: '', val: 'i1' }]
+                    type: 'li', kids: [{
+                        type: '', val: 'i1'
+                    }, {
+                        type: 'br'
+                    }]
                 }, {
-                    type: 'li', kids: [{ type: '', val: 'i2' }]
+                    type: 'li', kids: [{
+                        type: '', val: 'i2'
+                    }]
                 }]
             }]
         })
