@@ -28,7 +28,7 @@ export declare type vLink<T> = {
     [key in typeLink]: (title: string, href: string, parent: T) => void;
 };
 export interface vElement<T> {
-    element: (type: typeElement) => T;
+    element: (type: typeElement, parent: T) => T;
 }
 export declare type visitor<T> = vVal<T> & vBr<T> & vLink<T> & vElement<T>;
 export declare function visit<T>(node: node, visitor: visitor<T>, parent: T): void;

@@ -55,7 +55,7 @@ export type vLink<T> = {
 }
 
 export interface vElement<T> {
-    element: (type: typeElement) => T
+    element: (type: typeElement, parent: T) => T
 }
 
 export type visitor<T> =
@@ -68,7 +68,7 @@ export function visit<T>(node: node, visitor: visitor<T>, parent: T) {
     if (node.type === 'br') return visitor.br(parent)
     if (isVal(node)) return visitor[node.type](node.val, parent)
     if (isLink(node)) return visitor[node.type](node.title, node.href, parent)
-    const newParent = visitor.element(node.type)
+    const newParent = visitor.element(node.type, parent)
     node.kids.forEach(k => visit(k, visitor, newParent))
 }
 
