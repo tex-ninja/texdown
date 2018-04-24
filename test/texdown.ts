@@ -2,7 +2,7 @@ import 'mocha';
 import { expect } from 'chai'
 import { texdown } from '../src/texdown'
 
-describe('marko', () => {
+describe('texdown', () => {
     const h1 = '# *h1* $a^* = b$ \\*\\\\'
     it(h1, () => {
         expect(texdown(h1)).to.eql({
@@ -14,13 +14,7 @@ describe('marko', () => {
                 }, {
                     val: ' '
                 }, {
-                    type: '$', kids: [{
-                        val: 'a^'
-                    }, {
-                        val: '*'
-                    }, {
-                        val: ' = b'
-                    }]
+                    type: '$', val: 'a^* = b'
                 }, {
                     val: ' '
                 }, {
@@ -107,6 +101,17 @@ describe('marko', () => {
             type: 'doc', kids: [{
                 type: 'p', kids: [{
                     val: '[]'
+                }]
+            }]
+        })
+    })
+
+    const $ = '$ 50\\$ \\leq 100\\$ $'
+    it($, () => {
+        expect(texdown($)).to.eql({
+            type: 'doc', kids: [{
+                type: 'p', kids: [{
+                    type: '$', val: ' 50\\$ \\leq 100\\$ '
                 }]
             }]
         })

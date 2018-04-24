@@ -29,6 +29,11 @@ interface a extends kid {
     href: string
 }
 
+interface $ extends kid {
+    type: '$'
+    val: string
+}
+
 export function texdown(markDown: string) {
     const doc: node = { type: 'doc', kids: [] }
     const nodes: node[] = [doc]
@@ -47,7 +52,7 @@ export function texdown(markDown: string) {
         , oli: /^\d+\. /
         , b: '*'
         , i: '_'
-        , $: '$'
+        , $: /\$(?:\\\$|[^\n$])+\$/
         , a: /\[[^\]\n]*\]\([^)\n]*\)/
         , img: /!\[[^\]\n]*\]\([^)\n]*\)/
         , txt: /[^!\n*_$\\]+|[!*_$]/
@@ -64,9 +69,7 @@ export function texdown(markDown: string) {
 
         const delimiter = () => {
             const type = token.type as type
-            const topType = top().type
-            if (topType === type) return nodes.pop()
-            if (topType === '$' || topType === '$$') return text(token.text)
+            if (top().type === type) return nodes.pop()
             const c: node = { type: type, kids: [] }
             top().kids.push(c)
             nodes.push(c)
@@ -130,7 +133,14 @@ export function texdown(markDown: string) {
             , oli: () => list('ol')
             , b: delimiter
             , i: delimiter
-            , $: delimiter
+            , $: () => {
+                ensureInNode()
+                const tex = token.text.substring(1, token.text.length - 1)
+                top().kids.push({
+                    type: '$'
+                    , val: tex
+                })
+            }
             , a: () => link('a')
             , img: () => link('img')
             , txt: () => text(token.text)
@@ -149,6 +159,7 @@ export function texdown(markDown: string) {
             }
         }
 
+        // console.log('[TOKEN]', token)
         if (token.type) actions[token.type]()
     }
 
