@@ -6,7 +6,7 @@ describe('texdown', () => {
     const h1 = '# *h1* $a^* = b$ \\*\\\\'
     it(h1, () => {
         expect(texdown(h1)).to.eql({
-            type: 'doc', kids: [{
+            type: 'div', kids: [{
                 type: 'h1', kids: [{
                     type: 'b', kids: [{
                         type: '', val: 'h1'
@@ -29,29 +29,27 @@ describe('texdown', () => {
     const p = '# h1\np1l1\np1l2\n\np2l1\n# h1'
     it(p, () => {
         expect(texdown(p)).to.eql({
-            type: 'doc', kids: [{
+            type: 'div', kids: [{
                 type: 'h1', kids: [{
                     type: '', val: 'h1'
                 }]
             }, {
-                type: 'br'
-            }, {
                 type: 'p', kids: [{
-                    type: '', val: 'p1l1'
+                    type: 'div', kids: [{
+                        type: '', val: 'p1l1'
+                    }]
                 }, {
-                    type: 'br'
-                }, {
-                    type: '', val: 'p1l2'
-                }, {
-                    type: 'br'
+                    type: 'div', kids: [{
+                        type: '', val: 'p1l2'
+                    }]
                 }]
             }, {
                 type: 'br'
             }, {
                 type: 'p', kids: [{
-                    type: '', val: 'p2l1'
-                }, {
-                    type: 'br'
+                    type: 'div', kids: [{
+                        type: '', val: 'p2l1'
+                    }]
                 }]
             }, {
                 type: 'h1', kids: [{
@@ -64,19 +62,17 @@ describe('texdown', () => {
     const ul = 'ul\n- i1\n- i2'
     it(ul, () => {
         expect(texdown(ul)).to.eql({
-            type: 'doc', kids: [{
+            type: 'div', kids: [{
                 type: 'p', kids: [{
-                    type: '', val: 'ul'
-                }, {
-                    type: 'br'
+                    type: 'div', kids: [{
+                        type: '', val: 'ul'
+                    }]
                 }]
             }, {
                 type: 'ul', kids: [{
                     type: 'li', kids: [{
                         type: '', val: 'i1'
                     }]
-                }, {
-                    type: 'br'
                 }, {
                     type: 'li', kids: [{
                         type: '', val: 'i2'
@@ -89,13 +85,15 @@ describe('texdown', () => {
     const links = '[title1](href) ![title2](img)'
     it(links, () => {
         expect(texdown(links)).to.eql({
-            type: 'doc', kids: [{
+            type: 'div', kids: [{
                 type: 'p', kids: [{
-                    type: 'a', title: 'title1', href: 'href'
-                }, {
-                    type: '', val: ' '
-                }, {
-                    type: 'img', title: 'title2', href: 'img'
+                    type: 'div', kids: [{
+                        type: 'a', title: 'title1', href: 'href'
+                    }, {
+                        type: '', val: ' '
+                    }, {
+                        type: 'img', title: 'title2', href: 'img'
+                    }]
                 }]
             }]
         })
@@ -104,9 +102,11 @@ describe('texdown', () => {
     const txt = '[]'
     it(txt, () => {
         expect(texdown(txt)).to.eql({
-            type: 'doc', kids: [{
+            type: 'div', kids: [{
                 type: 'p', kids: [{
-                    type: '', val: '[]'
+                    type: 'div', kids: [{
+                        type: '', val: '[]'
+                    }]
                 }]
             }]
         })
@@ -115,9 +115,11 @@ describe('texdown', () => {
     const $ = '$ 50\\$ \\leq 100\\$ $'
     it($, () => {
         expect(texdown($)).to.eql({
-            type: 'doc', kids: [{
+            type: 'div', kids: [{
                 type: 'p', kids: [{
-                    type: '$', val: ' 50\\$ \\leq 100\\$ '
+                    type: 'div', kids: [{
+                        type: '$', val: ' 50\\$ \\leq 100\\$ '
+                    }]
                 }]
             }]
         })
@@ -126,7 +128,7 @@ describe('texdown', () => {
     const $$ = '$$\n a \\leq b \n$$\n'
     it($$, () => {
         expect(texdown($$)).to.eql({
-            type: 'doc', kids: [{
+            type: 'div', kids: [{
                 type: '$$', val: '\n a \\leq b \n'
             }]
         })
@@ -135,11 +137,13 @@ describe('texdown', () => {
     const notmath = '$\\'
     it(notmath, () => {
         expect(texdown(notmath)).to.eql({
-            type: 'doc', kids: [{
+            type: 'div', kids: [{
                 type: 'p', kids: [{
-                    type: '', val: '$'
-                }, {
-                    type: '', val: '\\'
+                    type: 'div', kids: [{
+                        type: '', val: '$'
+                    }, {
+                        type: '', val: '\\'
+                    }]
                 }]
             }]
         })
@@ -148,14 +152,14 @@ describe('texdown', () => {
     const v = '# h1\n\np1'
     it(v, () => {
         type n = {
-            n: string
+            t: string
             , v: string
             , k: n[]
         }
 
         const visitor: visitor<n> = {
             '': (val, p) => {
-                const e = { n: '', k: [], v: val }
+                const e = { t: '', k: [], v: val }
                 p.k.push(e)
             }
             , $: (val, p) => undefined
@@ -163,21 +167,40 @@ describe('texdown', () => {
             , br: (p) => undefined
             , a: (title, href, p) => undefined
             , img: (title, src, p) => undefined
+            , doc: () => ({ t: 'div', k: [], v: '' })
             , element: (type, p) => {
-                const e = { n: type, k: [], v: '' }
+                const e = { t: type, k: [], v: '' }
                 p.k.push(e)
                 return e
             }
         }
-        const doc = visit(texdown(v), visitor, { n: 'doc', v: '', k: [] })
-        expect(doc).to.eql({
-            n: 'doc', v: '', k: [{
-                n: 'h1', v: '', k: [{
-                    n: '', v: 'h1', k: []
-                }]
+        const ast = texdown(v)
+        expect(ast).to.eql({
+            type: 'div', kids: [{
+                type: 'h1', kids: [
+                    { type: '', val: 'h1' }
+                ]
             }, {
-                n: 'p', v: '', k: [{
-                    n: '', v: 'p1', k: []
+                type: 'br'
+            }, {
+                type: 'p', kids: [{
+                    type: 'div', kids: [{
+                        type: '', val: 'p1'
+                    }]
+                }]
+            }]
+        })
+        const doc = visit(ast, visitor)
+        expect(doc).to.eql({
+            t: 'div', v: '', k: [{
+                t: 'h1', v: '', k: [
+                    { t: '', v: 'h1', k: [] }
+                ]
+            }, {
+                t: 'p', v: '', k: [{
+                    t: 'div', v: '', k: [{
+                        t: '', v: 'p1', k: []
+                    }]
                 }]
             }]
         })

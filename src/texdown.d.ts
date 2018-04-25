@@ -1,9 +1,11 @@
-export declare type typeElement = 'doc' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'ul' | 'ol' | 'li' | 'b' | 'i';
+export declare type typeElement = 'div' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'ul' | 'ol' | 'li' | 'b' | 'i';
 export declare type typeVal = '' | '$$' | '$';
 export declare type typeLink = 'a' | 'img';
-export interface parent {
-    type: typeElement;
+export interface kids {
     kids: node[];
+}
+export interface element extends kids {
+    type: typeElement;
 }
 export interface br {
     type: 'br';
@@ -17,7 +19,7 @@ export interface link {
     title: string;
     href: string;
 }
-export declare type node = parent | val | link | br;
+export declare type node = element | val | link | br;
 export declare type vVal<T> = {
     [key in typeVal]: (val: string, parent: T) => void;
 };
@@ -30,6 +32,10 @@ export declare type vLink<T> = {
 export interface vElement<T> {
     element: (type: typeElement, parent: T) => T;
 }
-export declare type visitor<T> = vVal<T> & vBr<T> & vLink<T> & vElement<T>;
-export declare function visit<T>(node: node, visitor: visitor<T>, parent: T): T;
-export declare function texdown(markDown: string): parent;
+export interface vDoc<T> {
+    doc: () => T;
+}
+export declare type visitor<T> = vDoc<T> & vElement<T> & vLink<T> & vVal<T> & vBr<T>;
+export declare function visit<T>(ast: element, visitor: visitor<T>): T;
+export declare function visitNode<T>(node: node, visitor: visitor<T>, parent: T): void;
+export declare function texdown(markDown: string): element;

@@ -1,7 +1,7 @@
 import * as moo from 'moo'
 
 export type typeElement =
-    'doc'
+    'div'
     | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
     | 'p'
     | 'ul' | 'ol' | 'li'
@@ -10,9 +10,12 @@ export type typeElement =
 export type typeVal = '' | '$$' | '$'
 export type typeLink = 'a' | 'img'
 
-export interface parent {
-    type: typeElement
+export interface kids {
     kids: node[]
+}
+
+export interface element extends kids {
+    type: typeElement
 }
 
 export interface br {
@@ -30,7 +33,7 @@ export interface link {
     href: string
 }
 
-export type node = parent | val | link | br
+export type node = element | val | link | br
 
 function isVal(node: node): node is val {
     return node.type === ''
@@ -58,28 +61,39 @@ export interface vElement<T> {
     element: (type: typeElement, parent: T) => T
 }
 
-export type visitor<T> =
-    vVal<T>
-    & vBr<T>
-    & vLink<T>
-    & vElement<T>
+export interface vDoc<T> {
+    doc: () => T
+}
 
-export function visit<T>(node: node, visitor: visitor<T>, parent: T): T {
+export type visitor<T> =
+    vDoc<T>
+    & vElement<T>
+    & vLink<T>
+    & vVal<T>
+    & vBr<T>
+
+
+export function visit<T>(ast: element, visitor: visitor<T>) {
+    const d = visitor.doc()
+    ast.kids.forEach(k => {
+        visitNode(k, visitor, d)
+    })
+    return d
+}
+
+export function visitNode<T>(node: node, visitor: visitor<T>, parent: T) {
     if (node.type === 'br') visitor.br(parent)
     else if (isVal(node)) visitor[node.type](node.val, parent)
     else if (isLink(node)) visitor[node.type](node.title, node.href, parent)
     else {
-        const p = node.type === 'doc'
-            ? parent
-            : visitor.element(node.type, parent)
-        node.kids.forEach(k => visit(k, visitor, p))
+        const p = visitor.element(node.type, parent)
+        node.kids.forEach(k => visitNode(k, visitor, p))
     }
-    return parent
 }
 
 export function texdown(markDown: string) {
-    const doc: parent = { type: 'doc', kids: [] }
-    const ps: parent[] = [doc]
+    const doc: node = { type: 'div', kids: [] }
+    const ps: element[] = [doc]
     const top = () => ps[ps.length - 1] || doc
 
     // SPECIAL CHARS \\ * _ $ \n
@@ -118,15 +132,21 @@ export function texdown(markDown: string) {
             ps.push(c)
         }
 
-        const ensureInNode = () => {
-            if (top().type !== 'doc') return
-            const p: parent = { type: 'p', kids: [] }
-            doc.kids.push(p)
-            ps.push(p)
+        const startParagraphOrLineIfNeeded = () => {
+            if (ps.length === 1) {
+                const p: element = { type: 'p', kids: [] }
+                doc.kids.push(p)
+                ps.push(p)
+            }
+            if (top().type === 'p') {
+                const line: element = { type: 'div', kids: [] }
+                top().kids.push(line)
+                ps.push(line)
+            }
         }
 
         const text = (str: string) => {
-            ensureInNode()
+            startParagraphOrLineIfNeeded()
             top().kids.push({ type: '', val: str })
         }
 
@@ -154,7 +174,7 @@ export function texdown(markDown: string) {
         const extractLink = /.?\[([^\]]*)\]\(([^)]*)\)/
 
         const link = (type: 'a' | 'img') => {
-            ensureInNode()
+            startParagraphOrLineIfNeeded()
             const res = extractLink.exec(token.text)
             if (res === null) throw 'expecting link'
             top().kids.push({
@@ -183,7 +203,7 @@ export function texdown(markDown: string) {
                 })
             }
             , $: () => {
-                ensureInNode()
+                startParagraphOrLineIfNeeded()
                 const tex = token.text.substring(1, token.text.length - 1)
                 top().kids.push({
                     type: '$'
@@ -199,14 +219,13 @@ export function texdown(markDown: string) {
                 doc.kids.push({ type: 'br' })
             }
             , eol: () => {
-                const topType = top().type
-                if (topType !== 'p' && topType !== 'doc') ps.pop()
-                top().kids.push({ type: 'br' })
+                ps.pop()
             }
         }
 
         if (token.type) actions[token.type]()
     }
 
+    // console.log(JSON.stringify(doc, null, 2))
     return doc
 }
