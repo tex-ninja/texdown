@@ -34,5 +34,5 @@ export interface vDoc<T> {
     doc: () => T;
 }
 export declare type visitor<T> = vVal<T> & vBr<T> & vLink<T> & vElement<T> & vDoc<T>;
-export declare function visit<T>(node: node, visitor: visitor<T>, parent: T): void | T;
+export declare function visit<T>(node: node, visitor: visitor<T>, parent: T): void;
 export declare function texdown(markDown: string): parent;

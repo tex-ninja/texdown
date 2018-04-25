@@ -73,8 +73,9 @@ export function visit<T>(node: node, visitor: visitor<T>, parent: T) {
     if (node.type === 'br') return visitor.br(parent)
     if (isVal(node)) return visitor[node.type](node.val, parent)
     if (isLink(node)) return visitor[node.type](node.title, node.href, parent)
-    if (node.type === 'doc') return visitor.doc()
-    const newParent = visitor.element(node.type, parent)
+    const newParent = node.type === 'doc'
+        ? visitor.doc()
+        : visitor.element(node.type, parent)
     node.kids.forEach(k => visit(k, visitor, newParent))
 }
 
