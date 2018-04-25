@@ -81,7 +81,7 @@ export function visit<T>(node: node, visitor: visitor<T>, parent: T) {
 export function texdown(markDown: string) {
     const doc: parent = { type: 'doc', kids: [] }
     const ps: parent[] = [doc]
-    const top = () => ps[ps.length - 1]
+    const top = () => ps[ps.length - 1] || doc
 
     // SPECIAL CHARS \\ * _ $ \n
     const lexer = moo.compile({
@@ -120,7 +120,7 @@ export function texdown(markDown: string) {
         }
 
         const ensureInNode = () => {
-            if (top().type !== 'div') return
+            if (top().type !== 'doc') return
             const p: parent = { type: 'p', kids: [] }
             doc.kids.push(p)
             ps.push(p)
@@ -201,7 +201,7 @@ export function texdown(markDown: string) {
             }
             , eol: () => {
                 const topType = top().type
-                if (topType !== 'p' && topType !== 'div') ps.pop()
+                if (topType !== 'p' && topType !== 'doc') ps.pop()
                 top().kids.push({ type: 'br' })
             }
         }
