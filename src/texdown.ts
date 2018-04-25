@@ -43,23 +43,19 @@ function isLink(node: node): node is link {
 }
 
 export type vVal<T> = {
-    [key in typeVal]: (val: string, parent: T) => void
+    [key in typeVal]: (val: string, parent: T) => T
 }
 
 export type vBr<T> = {
-    [key in 'br']: (parent: T) => void
+    [key in 'br']: (parent: T) => T
 }
 
 export type vLink<T> = {
-    [key in typeLink]: (title: string, href: string, parent: T) => void
+    [key in typeLink]: (title: string, href: string, parent: T) => T
 }
 
 export interface vElement<T> {
     element: (type: typeElement, parent: T) => T
-}
-
-export interface vDoc<T> {
-    doc: () => T
 }
 
 export type visitor<T> =
@@ -67,16 +63,16 @@ export type visitor<T> =
     & vBr<T>
     & vLink<T>
     & vElement<T>
-    & vDoc<T>
 
-export function visit<T>(node: node, visitor: visitor<T>, parent: T) {
+export function visit<T>(node: node, visitor: visitor<T>, parent: T): T {
     if (node.type === 'br') return visitor.br(parent)
     if (isVal(node)) return visitor[node.type](node.val, parent)
     if (isLink(node)) return visitor[node.type](node.title, node.href, parent)
-    const newParent = node.type === 'doc'
-        ? visitor.doc()
+    const p = node.type === 'doc'
+        ? parent
         : visitor.element(node.type, parent)
-    node.kids.forEach(k => visit(k, visitor, newParent))
+    node.kids.forEach(k => visit(k, visitor, p))
+    return p
 }
 
 export function texdown(markDown: string) {

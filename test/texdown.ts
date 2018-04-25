@@ -1,6 +1,6 @@
 import 'mocha';
 import { expect } from 'chai'
-import { texdown } from '../src/texdown'
+import { texdown, visitor, nopVisitor, visit, visitor } from '../src/texdown'
 
 describe('texdown', () => {
     const h1 = '# *h1* $a^* = b$ \\*\\\\'
@@ -140,6 +140,45 @@ describe('texdown', () => {
                     type: '', val: '$'
                 }, {
                     type: '', val: '\\'
+                }]
+            }]
+        })
+    })
+
+    const v = '# h1\n\np1'
+    it(v, () => {
+        type n = {
+            n: string
+            , v: string
+            , k: n[]
+        }
+
+        const visitor: visitor<n> = {
+            '': (val, p) => {
+                const e = { n: '', k: [], v: val }
+                p.k.push(e)
+                return e
+            }
+            , $: (val, p) => ({ n: '', k: [], v: '' })
+            , $$: (val, p) => ({ n: '', k: [], v: '' })
+            , br: (p) => ({ n: '', k: [], v: '' })
+            , a: (title, href, p) => ({ n: '', k: [], v: '' })
+            , img: (title, src, p) => ({ n: '', k: [], v: '' })
+            , element: (type, p) => {
+                const e = { n: type, k: [], v: '' }
+                p.k.push(e)
+                return e
+            }
+        }
+        const doc = visit(texdown(v), visitor, { n: 'doc', v: '', k: [] })
+        expect(doc).to.eql({
+            n: 'doc', v: '', k: [{
+                n: 'h1', v: '', k: [{
+                    n: '', v: 'h1', k: []
+                }]
+            }, {
+                n: 'p', v: '', k: [{
+                    n: '', v: 'p1', k: []
                 }]
             }]
         })
