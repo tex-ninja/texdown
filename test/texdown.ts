@@ -1,6 +1,6 @@
 import 'mocha';
 import { expect } from 'chai'
-import { texdown, visitor, nopVisitor, visit, visitor } from '../src/texdown'
+import { texdown, visit, visitor } from '../src/texdown'
 
 describe('texdown', () => {
     const h1 = '# *h1* $a^* = b$ \\*\\\\'
@@ -157,13 +157,12 @@ describe('texdown', () => {
             '': (val, p) => {
                 const e = { n: '', k: [], v: val }
                 p.k.push(e)
-                return e
             }
-            , $: (val, p) => ({ n: '', k: [], v: '' })
-            , $$: (val, p) => ({ n: '', k: [], v: '' })
-            , br: (p) => ({ n: '', k: [], v: '' })
-            , a: (title, href, p) => ({ n: '', k: [], v: '' })
-            , img: (title, src, p) => ({ n: '', k: [], v: '' })
+            , $: (val, p) => undefined
+            , $$: (val, p) => undefined
+            , br: (p) => undefined
+            , a: (title, href, p) => undefined
+            , img: (title, src, p) => undefined
             , element: (type, p) => {
                 const e = { n: type, k: [], v: '' }
                 p.k.push(e)

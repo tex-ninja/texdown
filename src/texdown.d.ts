@@ -19,13 +19,13 @@ export interface link {
 }
 export declare type node = parent | val | link | br;
 export declare type vVal<T> = {
-    [key in typeVal]: (val: string, parent: T) => T;
+    [key in typeVal]: (val: string, parent: T) => void;
 };
 export declare type vBr<T> = {
-    [key in 'br']: (parent: T) => T;
+    [key in 'br']: (parent: T) => void;
 };
 export declare type vLink<T> = {
-    [key in typeLink]: (title: string, href: string, parent: T) => T;
+    [key in typeLink]: (title: string, href: string, parent: T) => void;
 };
 export interface vElement<T> {
     element: (type: typeElement, parent: T) => T;
