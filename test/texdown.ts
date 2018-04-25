@@ -123,11 +123,11 @@ describe('texdown', () => {
         })
     })
 
-    const $$ = '$$ a \\leq b $$'
+    const $$ = '$$\n a \\leq b \n$$\n'
     it($$, () => {
         expect(texdown($$)).to.eql({
             type: 'doc', kids: [{
-                type: '$$', val: ' a \\leq b '
+                type: '$$', val: '\n a \\leq b \n'
             }]
         })
     })

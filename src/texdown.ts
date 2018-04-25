@@ -96,7 +96,7 @@ export function texdown(markDown: string) {
         , i: '_'
         , a: /\[[^\]\n]*\]\([^)\n]*\)/
         , img: /!\[[^\]\n]*\]\([^)\n]*\)/
-        , $$: /\$\$(?:\\\$|[^$])+\$\$/
+        , $$: /^\$\$$(?:\\\$|[^$])+^\$\$\n/
         , $: /\$(?:\\\$|[^\n$])+\$/
         , esc: /\\\*|\\_|\\\$|\\\\|^\\#/
         , txt: /[^!\n*_$\\]+|[!*_$\\]/
@@ -176,7 +176,7 @@ export function texdown(markDown: string) {
             , b: delimiter
             , i: delimiter
             , $$: () => {
-                const tex = token.text.substring(2, token.text.length - 2)
+                const tex = token.text.substring(2, token.text.length - 3)
                 top().kids.push({
                     type: '$$'
                     , val: tex
