@@ -1,7 +1,7 @@
 import * as moo from 'moo'
 
 export type typeElement =
-    'div'
+    'doc'
     | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
     | 'p'
     | 'ul' | 'ol' | 'li'
@@ -58,22 +58,28 @@ export interface vElement<T> {
     element: (type: typeElement, parent: T) => T
 }
 
+export interface vDoc<T> {
+    doc: () => T
+}
+
 export type visitor<T> =
     vVal<T>
     & vBr<T>
     & vLink<T>
     & vElement<T>
+    & vDoc<T>
 
 export function visit<T>(node: node, visitor: visitor<T>, parent: T) {
     if (node.type === 'br') return visitor.br(parent)
     if (isVal(node)) return visitor[node.type](node.val, parent)
     if (isLink(node)) return visitor[node.type](node.title, node.href, parent)
+    if (node.type === 'doc') return visitor.doc()
     const newParent = visitor.element(node.type, parent)
     node.kids.forEach(k => visit(k, visitor, newParent))
 }
 
 export function texdown(markDown: string) {
-    const doc: parent = { type: 'div', kids: [] }
+    const doc: parent = { type: 'doc', kids: [] }
     const ps: parent[] = [doc]
     const top = () => ps[ps.length - 1]
 
