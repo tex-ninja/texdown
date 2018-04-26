@@ -5,7 +5,7 @@ export type typeElement =
     | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
     | 'p'
     | 'ul' | 'ol' | 'li'
-    | 'b' | 'i'
+    | 'b' | 'i' | 'u'
 
 export type typeVal = '' | '$$' | '$'
 export type typeLink = 'a' | 'img'
@@ -225,7 +225,12 @@ export function texdown(markDown: string) {
                 doc.kids.push({ type: 'br' })
             }
             , eol: () => {
-                ps.pop()
+                do {
+                    ps.pop()
+                } while (
+                    ps.length > 1
+                    && ['p', 'ul', 'ol'].indexOf(top().type) === -1
+                )
             }
         }
 

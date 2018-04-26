@@ -3,6 +3,25 @@ import { expect } from 'chai'
 import { texdown, visit, visitor } from '../src/texdown'
 
 describe('texdown', () => {
+    const pop = '*b\nt'
+    it(pop, () => {
+        expect(texdown(pop)).to.eql({
+            type: 'div', kids: [{
+                type: 'p', kids: [{
+                    type: 'div', kids: [{
+                        type: 'b', kids: [{
+                            type: '', val: 'b'
+                        }]
+                    }]
+                }, {
+                    type: 'div', kids: [{
+                        type: '', val: 't'
+                    }]
+                }]
+            }]
+        })
+    })
+
     const b = '*b*'
     it(b, () => {
         expect(texdown(b)).to.eql({
