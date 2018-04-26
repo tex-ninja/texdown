@@ -232,6 +232,6 @@ export function texdown(markDown: string) {
         if (token.type) actions[token.type]()
     }
 
-    console.log(JSON.stringify(doc, null, 2))
+    // console.log(JSON.stringify(doc, null, 2))
     return doc
 }
