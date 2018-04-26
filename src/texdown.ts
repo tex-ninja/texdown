@@ -107,13 +107,14 @@ export function texdown(markDown: string) {
         , uli: /^\- /
         , oli: /^\d+\. /
         , b: '*'
-        , i: '_'
+        , i: '/'
+        , u: '_'
         , a: /\[[^\]\n]*\]\([^)\n]*\)/
         , img: /!\[[^\]\n]*\]\([^)\n]*\)/
         , $$: /^\$\$$(?:\\\$|[^$])+^\$\$\n/
         , $: /\$(?:\\\$|[^\n$])+\$/
         , esc: /\\\*|\\_|\\\$|\\\\|^\\#/
-        , txt: /[^!\n*_$\\]+|[!*_$\\]/
+        , txt: /[^/!\n*_$\\]+|[!*_$\\/]/
         , blank: { match: /^\n/, lineBreaks: true }
         , eol: { match: /\n/, lineBreaks: true }
     })
@@ -199,6 +200,7 @@ export function texdown(markDown: string) {
             , oli: () => list('ol')
             , b: delimiter
             , i: delimiter
+            , u: delimiter
             , $$: () => {
                 const tex = token.text.substring(2, token.text.length - 3)
                 top().kids.push({

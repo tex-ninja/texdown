@@ -18,6 +18,36 @@ describe('texdown', () => {
         })
     })
 
+    const i = '/i/'
+    it(i, () => {
+        expect(texdown(i)).to.eql({
+            type: 'div', kids: [{
+                type: 'p', kids: [{
+                    type: 'div', kids: [{
+                        type: 'i', kids: [{
+                            type: '', val: 'i'
+                        }]
+                    }]
+                }]
+            }]
+        })
+    })
+
+    const u = '_u_'
+    it(u, () => {
+        expect(texdown(u)).to.eql({
+            type: 'div', kids: [{
+                type: 'p', kids: [{
+                    type: 'div', kids: [{
+                        type: 'u', kids: [{
+                            type: '', val: 'u'
+                        }]
+                    }]
+                }]
+            }]
+        })
+    })
+
     const h1 = '# *h1* $a^* = b$ \\*\\\\'
     it(h1, () => {
         expect(texdown(h1)).to.eql({
