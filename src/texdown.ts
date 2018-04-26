@@ -124,14 +124,6 @@ export function texdown(markDown: string) {
         const token = lexer.next()
         if (!token) break
 
-        const delimiter = () => {
-            const type = token.type as typeElement
-            if (top().type === type) return ps.pop()
-            const c = { type: type, kids: [] }
-            top().kids.push(c)
-            ps.push(c)
-        }
-
         const startParagraphOrLineIfNeeded = () => {
             if (ps.length === 1) {
                 const p: element = { type: 'p', kids: [] }
@@ -143,6 +135,18 @@ export function texdown(markDown: string) {
                 top().kids.push(line)
                 ps.push(line)
             }
+        }
+
+        const delimiter = () => {
+            const type = token.type as typeElement
+            if (top().type === type) {
+                ps.pop()
+                return
+            }
+            startParagraphOrLineIfNeeded()
+            const c = { type: type, kids: [] }
+            top().kids.push(c)
+            ps.push(c)
         }
 
         const text = (str: string) => {
@@ -226,6 +230,6 @@ export function texdown(markDown: string) {
         if (token.type) actions[token.type]()
     }
 
-    // console.log(JSON.stringify(doc, null, 2))
+    console.log(JSON.stringify(doc, null, 2))
     return doc
 }
