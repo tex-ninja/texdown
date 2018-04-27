@@ -6,6 +6,7 @@ export type typeElement =
     | 'p'
     | 'ul' | 'ol' | 'li'
     | 'b' | 'i' | 'u'
+    | 'span'
 
 export type typeVal = '' | '$$' | '$'
 export type typeLink = 'a' | 'img'
@@ -93,8 +94,8 @@ export function visitNode<T>(node: node, visitor: visitor<T>, parent: T) {
 
 export function texdown(markDown: string) {
     const doc: node = { type: 'div', kids: [] }
-    const ps: element[] = [doc]
-    const top = () => ps[ps.length - 1] || doc
+    const stack: element[] = [doc]
+    const top = () => stack[stack.length - 1] || doc
 
     // SPECIAL CHARS \\ * _ $ \n
     const lexer = moo.compile({
@@ -126,28 +127,28 @@ export function texdown(markDown: string) {
         if (!token) break
 
         const startParagraphOrLineIfNeeded = () => {
-            if (ps.length === 1) {
+            if (stack.length === 1) {
                 const p: element = { type: 'p', kids: [] }
                 doc.kids.push(p)
-                ps.push(p)
+                stack.push(p)
             }
             if (top().type === 'p') {
-                const line: element = { type: 'div', kids: [] }
+                const line: element = { type: 'span', kids: [] }
                 top().kids.push(line)
-                ps.push(line)
+                stack.push(line)
             }
         }
 
         const delimiter = () => {
             const type = token.type as typeElement
             if (top().type === type) {
-                ps.pop()
+                stack.pop()
                 return
             }
             startParagraphOrLineIfNeeded()
             const c = { type: type, kids: [] }
             top().kids.push(c)
-            ps.push(c)
+            stack.push(c)
         }
 
         const text = (str: string) => {
@@ -155,25 +156,26 @@ export function texdown(markDown: string) {
             top().kids.push({ type: '', val: str })
         }
 
-        const list = (type: 'ul' | 'ol') => {
-            if (top().type !== type) {
-                resetNodes()
-                const l = { type: type, kids: [] }
-                doc.kids.push(l)
-                ps.push(l)
+        const newListItem = (listType: 'ul' | 'ol') => {
+            if (top().type === 'li') stack.pop()
+            if (top().type !== listType) {
+                emptyStack()
+                const list = { type: listType, kids: [] }
+                doc.kids.push(list)
+                stack.push(list)
             }
             const li: node = { type: 'li', kids: [] }
             top().kids.push(li)
-            ps.push(li)
+            stack.push(li)
         }
 
-        const resetNodes = () => ps.splice(1, ps.length - 1)
+        const emptyStack = () => stack.splice(1, stack.length - 1)
 
         const node = () => {
             const c: node = { type: token.type as typeElement, kids: [] }
             doc.kids.push(c)
-            resetNodes()
-            ps.push(c)
+            emptyStack()
+            stack.push(c)
         }
 
         const extractLink = /.?\[([^\]]*)\]\(([^)]*)\)/
@@ -196,8 +198,8 @@ export function texdown(markDown: string) {
             , h4: node
             , h5: node
             , h6: node
-            , uli: () => list('ul')
-            , oli: () => list('ol')
+            , uli: () => newListItem('ul')
+            , oli: () => newListItem('ol')
             , b: delimiter
             , i: delimiter
             , u: delimiter
@@ -221,16 +223,16 @@ export function texdown(markDown: string) {
             , txt: () => text(token.text)
             , esc: () => text(token.text.substr(1))
             , blank: () => {
-                resetNodes()
+                emptyStack()
                 doc.kids.push({ type: 'br' })
             }
             , eol: () => {
-                do {
-                    ps.pop()
-                } while (
-                    ps.length > 1
-                    && ['p', 'ul', 'ol'].indexOf(top().type) === -1
-                )
+                const popByEol = [
+                    'h1', 'h2', 'h3', 'h4', 'h5', 'h6'
+                    , 'b', 'i', 'u'
+                    , 'span'
+                ]
+                while (popByEol.includes(top().type)) stack.pop()
             }
         }
 

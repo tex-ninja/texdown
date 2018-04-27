@@ -1,4 +1,4 @@
-export declare type typeElement = 'div' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'ul' | 'ol' | 'li' | 'b' | 'i' | 'u';
+export declare type typeElement = 'div' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'ul' | 'ol' | 'li' | 'b' | 'i' | 'u' | 'span';
 export declare type typeVal = '' | '$$' | '$';
 export declare type typeLink = 'a' | 'img';
 export interface kids {
