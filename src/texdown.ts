@@ -2,9 +2,10 @@ import * as moo from 'moo'
 
 export type typeElement =
     'div'
-    | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
     | 'p'
-    | 'ul' | 'ol' | 'li'
+    | 'ul' | 'ol'
+    | 'li'
+    | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
     | 'b' | 'i' | 'u'
     | 'span'
 
@@ -132,11 +133,18 @@ export function texdown(markDown: string) {
                 doc.kids.push(p)
                 stack.push(p)
             }
-            if (top().type === 'p') {
-                const line: element = { type: 'span', kids: [] }
-                top().kids.push(line)
-                stack.push(line)
-            }
+
+            const canHoldTxt = [
+                'h1', 'h2', 'h3', 'h4', 'h5', 'h6'
+                , 'b', 'i', 'u'
+                , 'span'
+            ]
+
+            if (canHoldTxt.includes(top().type)) return
+
+            const line: element = { type: 'span', kids: [] }
+            top().kids.push(line)
+            stack.push(line)
         }
 
         const delimiter = () => {

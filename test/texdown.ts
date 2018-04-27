@@ -135,11 +135,15 @@ describe('texdown', () => {
             }, {
                 type: 'ul', kids: [{
                     type: 'li', kids: [{
-                        type: '', val: 'i1'
+                        type: 'span', kids: [{
+                            type: '', val: 'i1'
+                        }]
                     }]
                 }, {
                     type: 'li', kids: [{
-                        type: '', val: 'i2'
+                        type: 'span', kids: [{
+                            type: '', val: 'i2'
+                        }]
                     }]
                 }]
             }]
