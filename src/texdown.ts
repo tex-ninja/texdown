@@ -38,9 +38,7 @@ export interface link {
 export type node = element | val | link | br
 
 function isVal(node: node): node is val {
-    return node.type === ''
-        || node.type === '$$'
-        || node.type === '$'
+    return ['', '$', '$$', 'tikz'].includes(node.type)
 }
 
 function isLink(node: node): node is link {
@@ -84,13 +82,21 @@ export function visit<T>(ast: element, visitor: visitor<T>) {
 }
 
 export function visitNode<T>(node: node, visitor: visitor<T>, parent: T) {
-    if (node.type === 'br') visitor.br(parent)
-    else if (isVal(node)) visitor[node.type](node.val, parent)
-    else if (isLink(node)) visitor[node.type](node.title, node.href, parent)
-    else {
-        const p = visitor.element(node.type, parent)
-        node.kids.forEach(k => visitNode(k, visitor, p))
+    if (node.type === 'br') {
+        visitor.br(parent)
+        return
     }
+    if (isVal(node)) {
+        visitor[node.type](node.val, parent)
+        return
+    }
+    if (isLink(node)) {
+        visitor[node.type](node.title, node.href, parent)
+        return
+    }
+
+    const p = visitor.element(node.type, parent)
+    node.kids.forEach(k => visitNode(k, visitor, p))
 }
 
 export function texdown(markDown: string) {
