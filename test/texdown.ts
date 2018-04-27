@@ -217,6 +217,15 @@ describe('texdown', () => {
         })
     })
 
+    const tikz = '\\begin{tikzpicture}\\end{tikzpicture}'
+    it(tikz, () => {
+        expect(texdown(tikz)).to.eql({
+            type: 'div', kids: [{
+                type: 'tikz', val: '\\begin{tikzpicture}\\end{tikzpicture}'
+            }]
+        })
+    })
+
     const v = '# h1\n\np1'
     it(v, () => {
         type n = {
@@ -236,6 +245,7 @@ describe('texdown', () => {
             , a: (title, href, p) => undefined
             , img: (title, src, p) => undefined
             , doc: () => ({ t: 'div', k: [], v: '' })
+            , tikz: () => { }
             , element: (type, p) => {
                 const e = { t: type, k: [], v: '' }
                 p.k.push(e)

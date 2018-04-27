@@ -9,7 +9,7 @@ export type typeElement =
     | 'b' | 'i' | 'u'
     | 'span'
 
-export type typeVal = '' | '$$' | '$'
+export type typeVal = '' | '$$' | '$' | 'tikz'
 export type typeLink = 'a' | 'img'
 
 export interface kids {
@@ -115,6 +115,7 @@ export function texdown(markDown: string) {
         , img: /!\[[^\]\n]*\]\([^)\n]*\)/
         , $$: /^\$\$$(?:\\\$|[^$])+^\$\$\n/
         , $: /\$(?:\\\$|[^\n$])+\$/
+        , tikz: /\\begin\{tikzpicture\}[^]*?\\end\{tikzpicture\}/
         , esc: /\\\*|\\_|\\\$|\\\\|^\\#/
         , txt: /[^/!\n*_$\\]+|[!*_$\\/]/
         , blank: { match: /^\n/, lineBreaks: true }
@@ -225,6 +226,10 @@ export function texdown(markDown: string) {
                     type: '$'
                     , val: tex
                 })
+            }
+            , tikz: () => {
+                emptyStack()
+                doc.kids.push({ type: 'tikz', val: token.text })
             }
             , a: () => link('a')
             , img: () => link('img')

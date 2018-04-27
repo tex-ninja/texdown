@@ -1,5 +1,5 @@
 export declare type typeElement = 'div' | 'p' | 'ul' | 'ol' | 'li' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'b' | 'i' | 'u' | 'span';
-export declare type typeVal = '' | '$$' | '$';
+export declare type typeVal = '' | '$$' | '$' | 'tikz';
 export declare type typeLink = 'a' | 'img';
 export interface kids {
     kids: node[];
