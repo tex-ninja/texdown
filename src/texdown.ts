@@ -1,110 +1,32 @@
 import * as moo from 'moo'
 
-export type typeElement =
-    'div'
-    | 'p'
-    | 'ul' | 'ol'
-    | 'li'
-    | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+export type tokens =
+    'h6' | 'h5' | 'h4' | 'h3' | 'h2' | 'h1'
     | 'b' | 'i' | 'u'
-    | 'span'
+    | 'txt'
 
-export type typeVal = '' | '$$' | '$' | 'tikz'
-export type typeLink = 'a' | 'img'
+export type typeElement =
+    'h6' | 'h5' | 'h4' | 'h3' | 'h2' | 'h1'
+    | 'b' | 'i' | 'u'
+    | 'p'
 
-export interface kids {
-    kids: node[]
+export type typeVal = 'txt'
+
+export type type =
+    typeElement
+    | typeVal
+
+export type action = {
+    [key in tokens]: (tkn: moo.Token) => void
 }
 
-export interface element extends kids {
-    type: typeElement
+export interface parser {
+    start: { [key in typeElement]: () => void }
+    end: { [key in typeElement]: () => void }
+    txt: (val: string) => void
 }
 
-export interface br {
-    type: 'br'
-}
-
-export interface val {
-    type: typeVal
-    val: string
-}
-
-export interface link {
-    type: typeLink
-    title: string
-    href: string
-}
-
-export type node = element | val | link | br
-
-function isVal(node: node): node is val {
-    return ['', '$', '$$', 'tikz'].includes(node.type)
-}
-
-function isLink(node: node): node is link {
-    return node.type === 'a' || node.type === 'img'
-}
-
-export type vVal<T> = {
-    [key in typeVal]: (val: string, parent: T) => void
-}
-
-export type vBr<T> = {
-    [key in 'br']: (parent: T) => void
-}
-
-export type vLink<T> = {
-    [key in typeLink]: (title: string, href: string, parent: T) => void
-}
-
-export interface vElement<T> {
-    element: (type: typeElement, parent: T) => T
-}
-
-export interface vDoc<T> {
-    doc: () => T
-}
-
-export type visitor<T> =
-    vDoc<T>
-    & vElement<T>
-    & vLink<T>
-    & vVal<T>
-    & vBr<T>
-
-
-export function visit<T>(ast: element, visitor: visitor<T>) {
-    const d = visitor.doc()
-    ast.kids.forEach(k => {
-        visitNode(k, visitor, d)
-    })
-    return d
-}
-
-export function visitNode<T>(node: node, visitor: visitor<T>, parent: T) {
-    if (node.type === 'br') {
-        visitor.br(parent)
-        return
-    }
-    if (isVal(node)) {
-        visitor[node.type](node.val, parent)
-        return
-    }
-    if (isLink(node)) {
-        visitor[node.type](node.title, node.href, parent)
-        return
-    }
-
-    const p = visitor.element(node.type, parent)
-    node.kids.forEach(k => visitNode(k, visitor, p))
-}
-
-export function texdown(markDown: string) {
-    const doc: node = { type: 'div', kids: [] }
-    const stack: element[] = [doc]
-    const top = () => stack[stack.length - 1] || doc
-
-    // SPECIAL CHARS \\ * _ $ \n
+export function texdown<T extends parser>(markDown: string, parser: T): T {
     const lexer = moo.compile({
         h6: /^###### /
         , h5: /^##### /
@@ -112,11 +34,11 @@ export function texdown(markDown: string) {
         , h3: /^### /
         , h2: /^## /
         , h1: /^# /
-        , uli: /^\- /
-        , oli: /^\d+\. /
         , b: '*'
         , i: '/'
         , u: '_'
+        , uli: /^\- /
+        , oli: /^\d+\. /
         , a: /\[[^\]\n]*\]\([^)\n]*\)/
         , img: /!\[[^\]\n]*\]\([^)\n]*\)/
         , $$: /^\$\$$(?:\\\$|[^$])+^\$\$\n/
@@ -130,134 +52,54 @@ export function texdown(markDown: string) {
 
     lexer.reset(markDown)
 
-    while (true) {
-        const token = lexer.next()
-        if (!token) break
+    const stack: typeElement[] = []
+    const top = () => stack[stack.length - 1]
 
-        const startParagraphOrLineIfNeeded = () => {
-            if (stack.length === 1) {
-                const p: element = { type: 'p', kids: [] }
-                doc.kids.push(p)
-                stack.push(p)
-            }
-
-            const canHoldTxt = [
-                'h1', 'h2', 'h3', 'h4', 'h5', 'h6'
-                , 'b', 'i', 'u'
-                , 'span'
-            ]
-
-            if (canHoldTxt.includes(top().type)) return
-
-            const line: element = { type: 'span', kids: [] }
-            top().kids.push(line)
-            stack.push(line)
-        }
-
-        const delimiter = () => {
-            const type = token.type as typeElement
-            if (top().type === type) {
-                stack.pop()
-                return
-            }
-            startParagraphOrLineIfNeeded()
-            const c = { type: type, kids: [] }
-            top().kids.push(c)
-            stack.push(c)
-        }
-
-        const text = (str: string) => {
-            startParagraphOrLineIfNeeded()
-            top().kids.push({ type: '', val: str })
-        }
-
-        const newListItem = (listType: 'ul' | 'ol') => {
-            if (top().type === 'li') stack.pop()
-            if (top().type !== listType) {
-                emptyStack()
-                const list = { type: listType, kids: [] }
-                doc.kids.push(list)
-                stack.push(list)
-            }
-            const li: node = { type: 'li', kids: [] }
-            top().kids.push(li)
-            stack.push(li)
-        }
-
-        const emptyStack = () => stack.splice(1, stack.length - 1)
-
-        const node = () => {
-            const c: node = { type: token.type as typeElement, kids: [] }
-            doc.kids.push(c)
-            emptyStack()
-            stack.push(c)
-        }
-
-        const extractLink = /.?\[([^\]]*)\]\(([^)]*)\)/
-
-        const link = (type: 'a' | 'img') => {
-            startParagraphOrLineIfNeeded()
-            const res = extractLink.exec(token.text)
-            if (res === null) throw 'expecting link'
-            top().kids.push({
-                type: type
-                , title: res[1]
-                , href: res[2]
-            })
-        }
-
-        const actions: { [type: string]: () => void } = {
-            h1: node
-            , h2: node
-            , h3: node
-            , h4: node
-            , h5: node
-            , h6: node
-            , uli: () => newListItem('ul')
-            , oli: () => newListItem('ol')
-            , b: delimiter
-            , i: delimiter
-            , u: delimiter
-            , $$: () => {
-                const tex = token.text.substring(2, token.text.length - 3)
-                top().kids.push({
-                    type: '$$'
-                    , val: tex
-                })
-            }
-            , $: () => {
-                startParagraphOrLineIfNeeded()
-                const tex = token.text.substring(1, token.text.length - 1)
-                top().kids.push({
-                    type: '$'
-                    , val: tex
-                })
-            }
-            , tikz: () => {
-                emptyStack()
-                doc.kids.push({ type: 'tikz', val: token.text })
-            }
-            , a: () => link('a')
-            , img: () => link('img')
-            , txt: () => text(token.text)
-            , esc: () => text(token.text.substr(1))
-            , blank: () => {
-                emptyStack()
-                doc.kids.push({ type: 'br' })
-            }
-            , eol: () => {
-                const popByEol = [
-                    'h1', 'h2', 'h3', 'h4', 'h5', 'h6'
-                    , 'b', 'i', 'u'
-                    , 'span'
-                ]
-                while (popByEol.includes(top().type)) stack.pop()
-            }
-        }
-
-        if (token.type) actions[token.type]()
+    const newElement = (type: typeElement) => {
+        stack.push(type)
+        parser.start[type]()
     }
 
-    // console.log(JSON.stringify(doc, null, 2))
-    return doc
-}
+    const del = (type: typeElement) => {
+        if (top() === type) {
+            stack.pop()
+            parser.end[type]()
+        } else {
+            stack.push(type)
+            parser.start[type]()
+        }
+    }
+
+    const actions: action = {
+        // ELEMENT
+        h6: () => newElement('h6')
+        , h5: () => newElement('h5')
+        , h4: () => newElement('h4')
+        , h3: () => newElement('h3')
+        , h2: () => newElement('h2')
+        , h1: () => newElement('h1')
+        , b: () => del('b')
+        , i: () => del('i')
+        , u: () => del('u')
+        // VAL
+        , txt: (token: moo.Token) => {
+            if (!stack.length) {
+                stack.push('p')
+                parser.start['p']()
+            }
+            parser.txt(token.text)
+        }
+    }
+
+    while (true) {
+        const token = lexer.next()
+        if (token === undefined) break
+        actions[token.type as tokens](token)
+    }
+
+    while (stack.length) {
+        parser.end[stack.pop() as typeElement]()
+    }
+
+    return parser
+}               
