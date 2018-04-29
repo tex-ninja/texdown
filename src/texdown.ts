@@ -110,9 +110,12 @@ export function texDown<T extends parser>(markDown: string, parser: T): T {
         // MATH
         , $$: (token) => {
             const txt = token.text
-            parser.$$(txt.substring(2, txt.length - 2))
+            parser.$$(txt.substring(3, txt.length - 4))
         }
-        , $: () => { }
+        , $: (token) => {
+            const txt = token.text
+            parser.$(txt.substring(1, txt.length - 1))
+        }
         // TIKZ
         , tikz: () => { }
         // ESC

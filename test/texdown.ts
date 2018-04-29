@@ -77,4 +77,18 @@ describe('texDown', () => {
             '<ol><li>i1</li><li>i2</li></ol>'
         )
     })
+
+    const $$ = '$$\ntex\n$$\n'
+    it($$, () => {
+        expect(texDown($$, new Parser()).res).to.eq(
+            '<$$>tex</$$>'
+        )
+    })
+
+    const $ = '$tex$'
+    it($, () => {
+        expect(texDown($, new Parser()).res).to.eq(
+            '<$>tex</$>'
+        )
+    })
 })
