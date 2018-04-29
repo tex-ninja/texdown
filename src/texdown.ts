@@ -15,6 +15,8 @@ export type typeElement =
     'h6' | 'h5' | 'h4' | 'h3' | 'h2' | 'h1'
     | 'b' | 'i' | 'u'
     | 'p'
+    | 'ul' | 'ol'
+    | 'li'
 
 export type typeVal = 'txt'
 
@@ -61,19 +63,23 @@ export function texdown<T extends parser>(markDown: string, parser: T): T {
     const stack: typeElement[] = []
     const top = () => stack[stack.length - 1]
 
+    const pop = () => {
+        parser.endElement(stack.pop() as typeElement)
+    }
+
+    const push = (type: typeElement) => {
+        stack.push(type)
+        parser.startElement(type)
+    }
+
     const newElement = (type: typeElement) => {
         stack.push(type)
         parser.startElement(type)
     }
 
     const del = (type: typeElement) => {
-        if (top() === type) {
-            stack.pop()
-            parser.endElement(type)
-        } else {
-            stack.push(type)
-            parser.startElement(type)
-        }
+        if (top() === type) pop()
+        else push(type)
     }
 
     const actions: action = {
@@ -87,6 +93,22 @@ export function texdown<T extends parser>(markDown: string, parser: T): T {
         , b: () => del('b')
         , i: () => del('i')
         , u: () => del('u')
+        , uli: () => {
+            while (stack.length && top() !== 'ul') pop()
+            if (top() !== 'ul') push('ul')
+            push('li')
+        }
+        , oli: () => { }
+        // LINK
+        , a: () => { }
+        , img: () => { }
+        // MATH
+        , $$: () => { }
+        , $: () => { }
+        // TIKZ
+        , tikz: () => { }
+        // ESC
+        , esc: () => { }
         // VAL
         , txt: (token: moo.Token) => {
             if (!stack.length) {
@@ -94,6 +116,14 @@ export function texdown<T extends parser>(markDown: string, parser: T): T {
                 parser.startElement('p')
             }
             parser.txt(token.text)
+        }
+        // EOL
+        , blank: () => { }
+        , eol: () => {
+            while (
+                stack.length
+                && top() !== 'p'
+                && top() !== 'li') pop()
         }
     }
 
