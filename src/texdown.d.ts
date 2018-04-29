@@ -10,5 +10,6 @@ export interface parser {
     startElement: (type: typeElement) => void;
     endElement: (type: typeElement) => void;
     txt: (val: string) => void;
+    eol: () => void;
 }
 export declare function texdown<T extends parser>(markDown: string, parser: T): T;

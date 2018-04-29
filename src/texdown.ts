@@ -32,6 +32,7 @@ export interface parser {
     startElement: (type: typeElement) => void
     endElement: (type: typeElement) => void
     txt: (val: string) => void
+    eol: () => void
 }
 
 export function texdown<T extends parser>(markDown: string, parser: T): T {
@@ -87,6 +88,7 @@ export function texdown<T extends parser>(markDown: string, parser: T): T {
         if (top() !== type) push(type)
         push('li')
     }
+
     const actions: action = {
         // ELEMENT
         h6: () => newElement('h6')
@@ -125,6 +127,7 @@ export function texdown<T extends parser>(markDown: string, parser: T): T {
                 stack.length
                 && top() !== 'p'
                 && top() !== 'li') pop()
+            if (top() === 'p') parser.eol()
         }
     }
 

@@ -15,6 +15,8 @@ class Parser implements parser {
     }
 
     txt = (val: string) => this.res += val
+
+    eol = () => this.res += '<br/>'
 }
 
 describe('texdown', () => {
@@ -53,10 +55,10 @@ describe('texdown', () => {
         )
     })
 
-    const p = 'p'
+    const p = 'l1\nl2'
     it(p, () => {
         expect(texdown(p, new Parser()).res).to.eq(
-            '<p>p</p>'
+            '<p>l1<br/>l2</p>'
         )
     })
 
