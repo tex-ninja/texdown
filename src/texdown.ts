@@ -33,6 +33,7 @@ export interface parser {
     endElement: (type: typeElement) => void
     $$: (tex: string) => void
     $: (tex: string) => void
+    a: (title: string, href: string) => void
     txt: (val: string) => void
     tikz: (tikz: string) => void
     eol: () => void
@@ -92,6 +93,13 @@ export function texDown<T extends parser>(markDown: string, parser: T): T {
         push('li')
     }
 
+    const reLink = /!?\[([^\]]*)\]\(([^)]*)\)/
+    const extracLink = (link: string) => {
+        const res = reLink.exec(link) as RegExpExecArray
+        console.log('link', link, 'res', res)
+        return [res[1], res[2]]
+    }
+
     const actions: action = {
         // ELEMENT
         h6: () => newElement('h6')
@@ -106,7 +114,10 @@ export function texDown<T extends parser>(markDown: string, parser: T): T {
         , uli: () => list('ul')
         , oli: () => list('ol')
         // LINK
-        , a: () => { }
+        , a: (token) => {
+            const [title, href] = extracLink(token.text)
+            parser.a(title, href)
+        }
         , img: () => { }
         // MATH
         , $$: (token) => {

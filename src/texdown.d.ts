@@ -11,6 +11,7 @@ export interface parser {
     endElement: (type: typeElement) => void;
     $$: (tex: string) => void;
     $: (tex: string) => void;
+    a: (title: string, href: string) => void;
     txt: (val: string) => void;
     tikz: (tikz: string) => void;
     eol: () => void;

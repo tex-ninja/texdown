@@ -16,6 +16,8 @@ class Parser implements parser {
 
     $$ = (tex: string) => this.res += `<$$>${tex}</$$>`
     $ = (tex: string) => this.res += `<$>${tex}</$>`
+    a = (title: string, href: string) =>
+        this.res += `<a href='${href}'>${title || href}</a>`
     txt = (val: string) => this.res += val
     tikz = (tikz: string) => this.res += `<tikz>${tikz}</tikz>`
 
@@ -90,6 +92,13 @@ describe('texDown', () => {
     it($, () => {
         expect(texDown($, new Parser()).res).to.eq(
             '<$>tex</$>'
+        )
+    })
+
+    const a = '[tex.ninja](http://tex.ninja)'
+    it(a, () => {
+        expect(texDown(a, new Parser()).res).to.eq(
+            "<a href='http://tex.ninja'>tex.ninja</a>"
         )
     })
 
