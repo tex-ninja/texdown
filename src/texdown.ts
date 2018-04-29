@@ -38,6 +38,7 @@ export interface parser {
     txt: (val: string) => void
     tikz: (tikz: string) => void
     eol: () => void
+    blank: () => void
 }
 
 export function texDown<T extends parser>(markDown: string, parser: T): T {
@@ -150,7 +151,10 @@ export function texDown<T extends parser>(markDown: string, parser: T): T {
             parser.txt(token.text)
         }
         // EOL
-        , blank: () => { }
+        , blank: () => {
+            while (stack.length) pop()
+            parser.blank()
+        }
         , eol: () => {
             while (
                 stack.length

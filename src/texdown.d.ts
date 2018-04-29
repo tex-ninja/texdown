@@ -16,5 +16,6 @@ export interface parser {
     txt: (val: string) => void;
     tikz: (tikz: string) => void;
     eol: () => void;
+    blank: () => void;
 }
 export declare function texDown<T extends parser>(markDown: string, parser: T): T;
