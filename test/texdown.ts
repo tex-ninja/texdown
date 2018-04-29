@@ -46,10 +46,17 @@ describe('texdown', () => {
         )
     })
 
-    const ol = '- i1\n- i2'
+    const ul = '- i1\n- i2'
+    it(ul, () => {
+        expect(texdown(ul, new Parser()).res).to.eq(
+            '<ul><li>i1</li><li>i2</li></ul>'
+        )
+    })
+
+    const ol = '1. i1\n2. i2'
     it(ol, () => {
         expect(texdown(ol, new Parser()).res).to.eq(
-            '<ul><li>i1</li><li>i2</li></ul>'
+            '<ol><li>i1</li><li>i2</li></ol>'
         )
     })
 })

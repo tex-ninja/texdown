@@ -82,6 +82,11 @@ export function texdown<T extends parser>(markDown: string, parser: T): T {
         else push(type)
     }
 
+    const list = (type: 'ul' | 'ol') => {
+        while (stack.length && top() !== type) pop()
+        if (top() !== type) push(type)
+        push('li')
+    }
     const actions: action = {
         // ELEMENT
         h6: () => newElement('h6')
@@ -93,12 +98,8 @@ export function texdown<T extends parser>(markDown: string, parser: T): T {
         , b: () => del('b')
         , i: () => del('i')
         , u: () => del('u')
-        , uli: () => {
-            while (stack.length && top() !== 'ul') pop()
-            if (top() !== 'ul') push('ul')
-            push('li')
-        }
-        , oli: () => { }
+        , uli: () => list('ul')
+        , oli: () => list('ol')
         // LINK
         , a: () => { }
         , img: () => { }
