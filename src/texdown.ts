@@ -140,15 +140,17 @@ export function texDown(markDown: string, ...parsers: Parser[]) {
         // MATH
         , $$: (token) => {
             const txt = token.text
+            const tex = txt.substring(3, txt.length - 4)
             parsers.forEach(
-                p => p.$$(txt.substring(3, txt.length - 4))
+                p => p.$$(tex)
             )
         }
         , $: (token) => {
             if (!stack.length) push('p')
             const txt = token.text
+            const tex = txt.substring(1, txt.length - 1)
             parsers.forEach(
-                p => p.$(txt.substring(1, txt.length - 1))
+                p => p.$(tex)
             )
         }
         // TIKZ
