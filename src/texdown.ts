@@ -70,7 +70,6 @@ export function texDown(markDown: string, ...parsers: Parser[]) {
         parsers.forEach(
             p => p.endElement(el)
         )
-        console.log('<-', stack)
     }
 
     const push = (type: typeElement) => {
@@ -78,7 +77,6 @@ export function texDown(markDown: string, ...parsers: Parser[]) {
         parsers.forEach(
             p => p.startElement(type)
         )
-        console.log('->', stack)
     }
 
     const newElement = (type: typeElement) => {
