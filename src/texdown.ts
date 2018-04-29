@@ -115,6 +115,7 @@ export function texDown<T extends parser>(markDown: string, parser: T): T {
         , oli: () => list('ol')
         // LINK
         , a: (token) => {
+            if (!stack.length) push('p')
             const [title, href] = extracLink(token.text)
             parser.a(title, href)
         }
@@ -125,6 +126,7 @@ export function texDown<T extends parser>(markDown: string, parser: T): T {
             parser.$$(txt.substring(3, txt.length - 4))
         }
         , $: (token) => {
+            if (!stack.length) push('p')
             const txt = token.text
             parser.$(txt.substring(1, txt.length - 1))
         }
@@ -136,10 +138,7 @@ export function texDown<T extends parser>(markDown: string, parser: T): T {
         , esc: () => { }
         // VAL
         , txt: (token) => {
-            if (!stack.length) {
-                stack.push('p')
-                parser.startElement('p')
-            }
+            if (!stack.length) push('p')
             parser.txt(token.text)
         }
         // EOL

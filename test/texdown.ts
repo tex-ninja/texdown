@@ -91,14 +91,14 @@ describe('texDown', () => {
     const $ = '$tex$'
     it($, () => {
         expect(texDown($, new Parser()).res).to.eq(
-            '<$>tex</$>'
+            '<p><$>tex</$></p>'
         )
     })
 
     const a = '[tex.ninja](http://tex.ninja)'
     it(a, () => {
         expect(texDown(a, new Parser()).res).to.eq(
-            "<a href='http://tex.ninja'>tex.ninja</a>"
+            "<p><a href='http://tex.ninja'>tex.ninja</a></p>"
         )
     })
 
