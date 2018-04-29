@@ -39,6 +39,20 @@ describe('texdown', () => {
         )
     })
 
+    const i = '/i/'
+    it(i, () => {
+        expect(texdown(i, new Parser()).res).to.eq(
+            '<i>i</i>'
+        )
+    })
+
+    const u = '_u_'
+    it(u, () => {
+        expect(texdown(u, new Parser()).res).to.eq(
+            '<u>u</u>'
+        )
+    })
+
     const p = 'p'
     it(p, () => {
         expect(texdown(p, new Parser()).res).to.eq(
