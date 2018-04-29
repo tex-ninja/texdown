@@ -18,11 +18,6 @@ export type typeElement =
     | 'ul' | 'ol'
     | 'li'
 
-export type typeVal = 'txt'
-
-export type type =
-    typeElement
-    | typeVal
 
 export type action = {
     [key in tokens]: (tkn: moo.Token) => void
