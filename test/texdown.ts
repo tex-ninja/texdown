@@ -147,16 +147,13 @@ describe('texDown', () => {
         )
     })
 
-    const doc = `
-# h1
-*b*/i/_u_
-`
+    const format = '*b*/i/_u_'
 
-    it(doc, () => {
+    it(format, () => {
         const parser = new TestParser()
-        texDown(doc, parser)
+        texDown(format, parser)
         expect(parser.res).to.eq(
-            `<h1>h1</h1><p><b>b</b><i>i</i><u>u</u></p>`
+            `<p><b>b</b><i>i</i><u>u</u></p>`
         )
     })
 })
