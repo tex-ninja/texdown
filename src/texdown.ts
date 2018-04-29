@@ -23,7 +23,7 @@ export type action = {
     [key in tokens]: (tkn: moo.Token) => void
 }
 
-export interface parser {
+export interface Parser {
     startElement: (type: typeElement) => void
     endElement: (type: typeElement) => void
     $$: (tex: string) => void
@@ -36,7 +36,7 @@ export interface parser {
     blank: () => void
 }
 
-export function texDown<T extends parser>(markDown: string, parser: T): T {
+export function texDown(markDown: string, ...parsers: Parser[]) {
     const lexer = moo.compile({
         h6: /^###### /
         , h5: /^##### /
@@ -66,17 +66,23 @@ export function texDown<T extends parser>(markDown: string, parser: T): T {
     const top = () => stack[stack.length - 1]
 
     const pop = () => {
-        parser.endElement(stack.pop() as typeElement)
+        parsers.forEach(
+            p => p.endElement(stack.pop() as typeElement)
+        )
     }
 
     const push = (type: typeElement) => {
         stack.push(type)
-        parser.startElement(type)
+        parsers.forEach(
+            p => p.startElement(type)
+        )
     }
 
     const newElement = (type: typeElement) => {
         stack.push(type)
-        parser.startElement(type)
+        parsers.forEach(
+            p => p.startElement(type)
+        )
     }
 
     const del = (type: typeElement) => {
@@ -118,44 +124,60 @@ export function texDown<T extends parser>(markDown: string, parser: T): T {
         , a: (token) => {
             if (!stack.length) push('p')
             const [title, href] = extracLink(token.text)
-            parser.a(title, href)
+            parsers.forEach(
+                p => p.a(title, href)
+            )
         }
         , img: (token) => {
             const [title, href] = extracLink(token.text)
-            parser.img(title, href)
+            parsers.forEach(
+                p => p.img(title, href)
+            )
         }
         // MATH
         , $$: (token) => {
             const txt = token.text
-            parser.$$(txt.substring(3, txt.length - 4))
+            parsers.forEach(
+                p => p.$$(txt.substring(3, txt.length - 4))
+            )
         }
         , $: (token) => {
             if (!stack.length) push('p')
             const txt = token.text
-            parser.$(txt.substring(1, txt.length - 1))
+            parsers.forEach(
+                p => p.$(txt.substring(1, txt.length - 1))
+            )
         }
         // TIKZ
         , tikz: (token) => {
-            parser.tikz(token.text)
+            parsers.forEach(
+                p => p.tikz(token.text)
+            )
         }
         // ESC
         , esc: () => { }
         // VAL
         , txt: (token) => {
             if (!stack.length) push('p')
-            parser.txt(token.text)
+            parsers.forEach(
+                p => p.txt(token.text)
+            )
         }
         // EOL
         , blank: () => {
             while (stack.length) pop()
-            parser.blank()
+            parsers.forEach(
+                p => p.blank()
+            )
         }
         , eol: () => {
             while (
                 stack.length
                 && top() !== 'p'
                 && top() !== 'li') pop()
-            if (top() === 'p') parser.eol()
+            if (top() === 'p') parsers.forEach(
+                p => p.eol()
+            )
         }
     }
 
@@ -166,8 +188,8 @@ export function texDown<T extends parser>(markDown: string, parser: T): T {
     }
 
     while (stack.length) {
-        parser.endElement(stack.pop() as typeElement)
+        parsers.forEach(
+            p => p.endElement(stack.pop() as typeElement)
+        )
     }
-
-    return parser
 }               

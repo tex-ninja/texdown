@@ -1,9 +1,9 @@
 import 'mocha';
 import { expect } from 'chai';
-import { texDown, parser, typeElement } from '../src/texdown';
+import { texDown, Parser, typeElement } from '../src/texdown';
 
 
-class Parser implements parser {
+class TestParser implements Parser {
     public res = ''
 
     startElement = (type: typeElement) => {
@@ -32,91 +32,117 @@ class Parser implements parser {
 describe('texDown', () => {
     const h6 = '###### h6'
     it(h6, () => {
-        expect(texDown(h6, new Parser()).res).to.eq(
+        const p = new TestParser()
+        texDown(h6, p)
+        expect(p.res).to.eq(
             '<h6>h6</h6>'
         )
     })
 
     const h5 = '##### h5'
     it(h5, () => {
-        expect(texDown(h5, new Parser()).res).to.eq(
+        const parser = new TestParser()
+        texDown(h5, parser)
+        expect(parser.res).to.eq(
             '<h5>h5</h5>'
         )
     })
 
     const b = '*b*'
     it(b, () => {
-        expect(texDown(b, new Parser()).res).to.eq(
+        const parser = new TestParser()
+        texDown(b, parser)
+        expect(parser.res).to.eq(
             '<p><b>b</b></p>'
         )
     })
 
     const i = '/i/'
     it(i, () => {
-        expect(texDown(i, new Parser()).res).to.eq(
+        const parser = new TestParser()
+        texDown(i, parser)
+        expect(parser.res).to.eq(
             '<p><i>i</i></p>'
         )
     })
 
     const u = '_u_'
     it(u, () => {
-        expect(texDown(u, new Parser()).res).to.eq(
+        const parser = new TestParser()
+        texDown(u, parser)
+        expect(parser.res).to.eq(
             '<p><u>u</u></p>'
         )
     })
 
     const p = 'l1\nl2'
     it(p, () => {
-        expect(texDown(p, new Parser()).res).to.eq(
+        const parser = new TestParser()
+        texDown(p, parser)
+        expect(parser.res).to.eq(
             '<p>l1&nbsp;l2</p>'
         )
     })
 
     const ul = '- i1\n- i2'
     it(ul, () => {
-        expect(texDown(ul, new Parser()).res).to.eq(
+        const parser = new TestParser()
+        texDown(ul, parser)
+        expect(parser.res).to.eq(
             '<ul><li>i1</li><li>i2</li></ul>'
         )
     })
 
     const ol = '1. i1\n2. i2'
     it(ol, () => {
-        expect(texDown(ol, new Parser()).res).to.eq(
+        const parser = new TestParser()
+        texDown(ol, parser)
+        expect(parser.res).to.eq(
             '<ol><li>i1</li><li>i2</li></ol>'
         )
     })
 
     const $$ = '$$\ntex\n$$\n'
     it($$, () => {
-        expect(texDown($$, new Parser()).res).to.eq(
+        const parser = new TestParser()
+        texDown($$, parser)
+        expect(parser.res).to.eq(
             '<$$>tex</$$>'
         )
     })
 
     const $ = '$tex$'
     it($, () => {
-        expect(texDown($, new Parser()).res).to.eq(
+        const parser = new TestParser()
+        texDown($, parser)
+        expect(parser.res).to.eq(
             '<p><$>tex</$></p>'
         )
     })
 
     const a = '[tex.ninja](http://tex.ninja)'
     it(a, () => {
-        expect(texDown(a, new Parser()).res).to.eq(
+        const parser = new TestParser()
+        texDown(a, parser)
+        expect(parser.res).to.eq(
             "<p><a href='http://tex.ninja'>tex.ninja</a></p>"
         )
     })
 
     const img = '![ninja](ninja.png)'
     it(img, () => {
-        expect(texDown(img, new Parser()).res).to.eq(
+        const parser = new TestParser()
+        texDown(img, parser)
+        expect(parser.res).to.eq(
             "<img title='ninja' src='ninja.png' />"
         )
     })
 
     const tikz = '\\begin{tikzpicture}\ntikz\n\\end{tikzpicture}'
     it(tikz, () => {
-        expect(texDown(tikz, new Parser()).res).to.eq(
+        const parser = new TestParser()
+        texDown(tikz, parser)
+        expect(parser.res).to.eq(
             '<tikz>\\begin{tikzpicture}\ntikz\n\\end{tikzpicture}</tikz>'
         )
     })
