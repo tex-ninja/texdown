@@ -12,6 +12,7 @@ export interface parser {
     $$: (tex: string) => void;
     $: (tex: string) => void;
     a: (title: string, href: string) => void;
+    img: (title: string, src: string) => void;
     txt: (val: string) => void;
     tikz: (tikz: string) => void;
     eol: () => void;

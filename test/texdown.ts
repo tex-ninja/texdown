@@ -16,8 +16,12 @@ class Parser implements parser {
 
     $$ = (tex: string) => this.res += `<$$>${tex}</$$>`
     $ = (tex: string) => this.res += `<$>${tex}</$>`
+
     a = (title: string, href: string) =>
         this.res += `<a href='${href}'>${title || href}</a>`
+    img = (title: string, src: string) =>
+        this.res += `<img title='${title}' src='${src}' />`
+
     txt = (val: string) => this.res += val
     tikz = (tikz: string) => this.res += `<tikz>${tikz}</tikz>`
 
@@ -99,6 +103,13 @@ describe('texDown', () => {
     it(a, () => {
         expect(texDown(a, new Parser()).res).to.eq(
             "<p><a href='http://tex.ninja'>tex.ninja</a></p>"
+        )
+    })
+
+    const img = '![ninja](ninja.png)'
+    it(img, () => {
+        expect(texDown(img, new Parser()).res).to.eq(
+            "<img title='ninja' src='ninja.png' />"
         )
     })
 

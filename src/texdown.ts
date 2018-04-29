@@ -34,6 +34,7 @@ export interface parser {
     $$: (tex: string) => void
     $: (tex: string) => void
     a: (title: string, href: string) => void
+    img: (title: string, src: string) => void
     txt: (val: string) => void
     tikz: (tikz: string) => void
     eol: () => void
@@ -123,7 +124,10 @@ export function texDown<T extends parser>(markDown: string, parser: T): T {
             const [title, href] = extracLink(token.text)
             parser.a(title, href)
         }
-        , img: () => { }
+        , img: (token) => {
+            const [title, href] = extracLink(token.text)
+            parser.img(title, href)
+        }
         // MATH
         , $$: (token) => {
             const txt = token.text
