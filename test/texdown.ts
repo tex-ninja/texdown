@@ -42,21 +42,21 @@ describe('texDown', () => {
     const b = '*b*'
     it(b, () => {
         expect(texDown(b, new Parser()).res).to.eq(
-            '<b>b</b>'
+            '<p><b>b</b></p>'
         )
     })
 
     const i = '/i/'
     it(i, () => {
         expect(texDown(i, new Parser()).res).to.eq(
-            '<i>i</i>'
+            '<p><i>i</i></p>'
         )
     })
 
     const u = '_u_'
     it(u, () => {
         expect(texDown(u, new Parser()).res).to.eq(
-            '<u>u</u>'
+            '<p><u>u</u></p>'
         )
     })
 

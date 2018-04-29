@@ -83,8 +83,12 @@ export function texDown<T extends parser>(markDown: string, parser: T): T {
     }
 
     const del = (type: typeElement) => {
-        if (top() === type) pop()
-        else push(type)
+        if (top() === type) {
+            pop()
+            return
+        }
+        if (!stack.length) push('p')
+        push(type)
     }
 
     const list = (type: 'ul' | 'ol') => {
