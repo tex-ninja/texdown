@@ -3,7 +3,13 @@ import * as moo from 'moo'
 export type tokens =
     'h6' | 'h5' | 'h4' | 'h3' | 'h2' | 'h1'
     | 'b' | 'i' | 'u'
+    | 'uli' | 'oli'
+    | 'a' | 'img'
+    | '$' | '$$'
+    | 'tikz'
+    | 'esc'
     | 'txt'
+    | 'blank' | 'eol'
 
 export type typeElement =
     'h6' | 'h5' | 'h4' | 'h3' | 'h2' | 'h1'
