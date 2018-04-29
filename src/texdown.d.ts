@@ -7,12 +7,8 @@ export declare type action = {
     [key in tokens]: (tkn: moo.Token) => void;
 };
 export interface parser {
-    start: {
-        [key in typeElement]: () => void;
-    };
-    end: {
-        [key in typeElement]: () => void;
-    };
+    startElement: (type: typeElement) => void;
+    endElement: (type: typeElement) => void;
     txt: (val: string) => void;
 }
 export declare function texdown<T extends parser>(markDown: string, parser: T): T;

@@ -21,8 +21,8 @@ export type action = {
 }
 
 export interface parser {
-    start: { [key in typeElement]: () => void }
-    end: { [key in typeElement]: () => void }
+    startElement: (type: typeElement) => void
+    endElement: (type: typeElement) => void
     txt: (val: string) => void
 }
 
@@ -57,16 +57,16 @@ export function texdown<T extends parser>(markDown: string, parser: T): T {
 
     const newElement = (type: typeElement) => {
         stack.push(type)
-        parser.start[type]()
+        parser.startElement(type)
     }
 
     const del = (type: typeElement) => {
         if (top() === type) {
             stack.pop()
-            parser.end[type]()
+            parser.endElement(type)
         } else {
             stack.push(type)
-            parser.start[type]()
+            parser.startElement(type)
         }
     }
 
@@ -85,7 +85,7 @@ export function texdown<T extends parser>(markDown: string, parser: T): T {
         , txt: (token: moo.Token) => {
             if (!stack.length) {
                 stack.push('p')
-                parser.start['p']()
+                parser.startElement('p')
             }
             parser.txt(token.text)
         }
@@ -98,7 +98,7 @@ export function texdown<T extends parser>(markDown: string, parser: T): T {
     }
 
     while (stack.length) {
-        parser.end[stack.pop() as typeElement]()
+        parser.endElement(stack.pop() as typeElement)
     }
 
     return parser
