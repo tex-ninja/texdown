@@ -26,14 +26,14 @@ export type action = {
 export interface Parser {
     startElement: (type: typeElement) => void
     endElement: (type: typeElement) => void
-    $$: (tex: string) => void
-    $: (tex: string) => void
-    a: (title: string, href: string) => void
-    img: (title: string, src: string) => void
     txt: (val: string) => void
-    tikz: (tikz: string) => void
     eol: () => void
     blank: () => void
+    a: (title: string, href: string) => void
+    img: (title: string, src: string) => void
+    $: (tex: string) => void
+    $$: (tex: string) => void
+    tikz: (tikz: string) => void
 }
 
 export function texDown(markDown: string, ...parsers: Parser[]) {
