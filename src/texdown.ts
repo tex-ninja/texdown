@@ -104,7 +104,6 @@ export function texDown(markDown: string, ...parsers: Parser[]) {
     const reLink = /!?\[([^\]]*)\]\(([^)]*)\)/
     const extracLink = (link: string) => {
         const res = reLink.exec(link) as RegExpExecArray
-        console.log('link', link, 'res', res)
         return [res[1], res[2]]
     }
 
