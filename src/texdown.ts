@@ -175,7 +175,7 @@ export function texDown(markDown: string, ...parsers: Parser[]) {
                 stack.length
                 && top() !== 'p'
                 && top() !== 'li') pop()
-            if (top() === 'p') parsers.forEach(
+            parsers.forEach(
                 p => p.eol()
             )
         }

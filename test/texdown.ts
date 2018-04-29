@@ -25,8 +25,8 @@ class TestParser implements Parser {
     txt = (val: string) => this.res += val
     tikz = (tikz: string) => this.res += `<tikz>${tikz}</tikz>`
 
-    eol = () => this.res += '&nbsp;'
-    blank = () => this.res += '<br/>'
+    eol = () => { }
+    blank = () => { }
 }
 
 describe('texDown', () => {
@@ -75,12 +75,12 @@ describe('texDown', () => {
         )
     })
 
-    const p = 'l1\nl2'
+    const p = 'do\ng'
     it(p, () => {
         const parser = new TestParser()
         texDown(p, parser)
         expect(parser.res).to.eq(
-            '<p>l1&nbsp;l2</p>'
+            '<p>dog</p>'
         )
     })
 
@@ -144,6 +144,19 @@ describe('texDown', () => {
         texDown(tikz, parser)
         expect(parser.res).to.eq(
             '<tikz>\\begin{tikzpicture}\ntikz\n\\end{tikzpicture}</tikz>'
+        )
+    })
+
+    const doc = `
+# h1
+*b*/i/_u_
+`
+
+    it(doc, () => {
+        const parser = new TestParser()
+        texDown(doc, parser)
+        expect(parser.res).to.eq(
+            `<h1>h1</h1><p><b>b</b><i>i</i><u>u</u></p>`
         )
     })
 })
