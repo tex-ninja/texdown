@@ -34,6 +34,7 @@ export interface parser {
     $$: (tex: string) => void
     $: (tex: string) => void
     txt: (val: string) => void
+    tikz: (tikz: string) => void
     eol: () => void
 }
 
@@ -117,7 +118,9 @@ export function texDown<T extends parser>(markDown: string, parser: T): T {
             parser.$(txt.substring(1, txt.length - 1))
         }
         // TIKZ
-        , tikz: () => { }
+        , tikz: (token) => {
+            parser.tikz(token.text)
+        }
         // ESC
         , esc: () => { }
         // VAL

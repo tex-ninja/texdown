@@ -12,6 +12,7 @@ export interface parser {
     $$: (tex: string) => void;
     $: (tex: string) => void;
     txt: (val: string) => void;
+    tikz: (tikz: string) => void;
     eol: () => void;
 }
 export declare function texDown<T extends parser>(markDown: string, parser: T): T;

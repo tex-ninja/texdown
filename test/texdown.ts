@@ -17,6 +17,7 @@ class Parser implements parser {
     $$ = (tex: string) => this.res += `<$$>${tex}</$$>`
     $ = (tex: string) => this.res += `<$>${tex}</$>`
     txt = (val: string) => this.res += val
+    tikz = (tikz: string) => this.res += `<tikz>${tikz}</tikz>`
 
     eol = () => this.res += '<br/>'
 }
@@ -89,6 +90,13 @@ describe('texDown', () => {
     it($, () => {
         expect(texDown($, new Parser()).res).to.eq(
             '<$>tex</$>'
+        )
+    })
+
+    const tikz = '\\begin{tikzpicture}\ntikz\n\\end{tikzpicture}'
+    it(tikz, () => {
+        expect(texDown(tikz, new Parser()).res).to.eq(
+            '<tikz>\\begin{tikzpicture}\ntikz\n\\end{tikzpicture}</tikz>'
         )
     })
 })
