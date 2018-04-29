@@ -54,7 +54,7 @@ export function texDown(markDown: string, ...parsers: Parser[]) {
         , $$: /^\$\$$(?:\\\$|[^$])+^\$\$\n/
         , $: /\$(?:\\\$|[^\n$])+\$/
         , tikz: /\\begin\{tikzpicture\}[^]*?\\end\{tikzpicture\}/
-        , esc: /\\\*|\\_|\\\$|\\\\|^\\#/
+        , esc: /\*\*|\/\/|__/
         , txt: /[^/!\n*_$\\]+|[!*_$\\/]/
         , blank: { match: /^\n/, lineBreaks: true }
         , eol: { match: /\n/, lineBreaks: true }
@@ -187,9 +187,5 @@ export function texDown(markDown: string, ...parsers: Parser[]) {
         actions[token.type as tokens](token)
     }
 
-    while (stack.length) {
-        parsers.forEach(
-            p => p.endElement(stack.pop() as typeElement)
-        )
-    }
+    while (stack.length) pop()
 }               
