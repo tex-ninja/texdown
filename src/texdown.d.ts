@@ -9,7 +9,9 @@ export declare type action = {
 export interface parser {
     startElement: (type: typeElement) => void;
     endElement: (type: typeElement) => void;
+    $$: (tex: string) => void;
+    $: (tex: string) => void;
     txt: (val: string) => void;
     eol: () => void;
 }
-export declare function texdown<T extends parser>(markDown: string, parser: T): T;
+export declare function texDown<T extends parser>(markDown: string, parser: T): T;

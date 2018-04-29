@@ -31,11 +31,13 @@ export type action = {
 export interface parser {
     startElement: (type: typeElement) => void
     endElement: (type: typeElement) => void
+    $$: (tex: string) => void
+    $: (tex: string) => void
     txt: (val: string) => void
     eol: () => void
 }
 
-export function texdown<T extends parser>(markDown: string, parser: T): T {
+export function texDown<T extends parser>(markDown: string, parser: T): T {
     const lexer = moo.compile({
         h6: /^###### /
         , h5: /^##### /
@@ -106,14 +108,17 @@ export function texdown<T extends parser>(markDown: string, parser: T): T {
         , a: () => { }
         , img: () => { }
         // MATH
-        , $$: () => { }
+        , $$: (token) => {
+            const txt = token.text
+            parser.$$(txt.substring(2, txt.length - 2))
+        }
         , $: () => { }
         // TIKZ
         , tikz: () => { }
         // ESC
         , esc: () => { }
         // VAL
-        , txt: (token: moo.Token) => {
+        , txt: (token) => {
             if (!stack.length) {
                 stack.push('p')
                 parser.startElement('p')
