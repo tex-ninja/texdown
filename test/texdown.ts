@@ -147,8 +147,16 @@ describe('texDown', () => {
         )
     })
 
-    const format = '*b*/i/_u_'
+    const hr = '--'
+    it(hr, () => {
+        const parser = new TestParser()
+        texDown(hr, parser)
+        expect(parser.res).to.eq(
+            `<hr></hr>`
+        )
+    })
 
+    const format = '*b*/i/_u_'
     it(format, () => {
         const parser = new TestParser()
         texDown(format, parser)

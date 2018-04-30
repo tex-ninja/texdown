@@ -10,7 +10,7 @@ export type tokens =
     | 'tikz'
     | 'esc'
     | 'txt'
-    | 'blank' | 'eol'
+    | 'blank' | 'eol' | 'hr'
 
 export type typeElement =
     h
@@ -18,6 +18,7 @@ export type typeElement =
     | 'p'
     | 'ul' | 'ol'
     | 'li'
+    | 'hr'
 
 
 export type action = {
@@ -55,6 +56,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         , $$: /^\$\$$(?:\\\$|[^$])+^\$\$\n/
         , $: /\$(?:\\\$|[^\n$])+\$/
         , tikz: /\\begin\{tikzpicture\}[^]*?\\end\{tikzpicture\}/
+        , hr: /^--$/
         , esc: /\*\*|\/\/|__/
         , txt: /[^/!\n*_$\\]+|[!*_$\\/]/
         , blank: { match: /^\n/, lineBreaks: true }
@@ -74,6 +76,10 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         )
     }
 
+    const clearStack = () => {
+        while (stack.length) pop()
+    }
+
     const push = (type: typeElement) => {
         stack.push(type)
         id++
@@ -83,7 +89,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
     }
 
     const h = (type: h) => {
-        while (stack.length) pop()
+        clearStack()
         push(type)
     }
 
@@ -163,6 +169,17 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
                 p => p.tikz(token.text, id)
             )
         }
+        // HR
+        , hr: () => {
+            id++
+            clearStack()
+            renderers.forEach(
+                p => {
+                    p.startElement('hr', id)
+                    p.endElement('hr')
+                }
+            )
+        }
         // ESC
         , esc: () => { }
         // VAL
@@ -174,7 +191,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         }
         // EOL
         , blank: () => {
-            while (stack.length) pop()
+            clearStack()
             renderers.forEach(
                 p => p.blank()
             )
@@ -196,5 +213,5 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         actions[token.type as tokens](token)
     }
 
-    while (stack.length) pop()
+    clearStack()
 }               
