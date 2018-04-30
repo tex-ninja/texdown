@@ -1,34 +1,38 @@
 import * as moo from 'moo'
 
-export type h = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
-export type tokens =
-    h
-    | 'b' | 'i' | 'u'
+export type H = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+export type Format = | 'b' | 'i' | 'u'
+export type Element =
+    H | Format
+    | 'p'
+    | 'ul' | 'ol'
+    | 'li'
+
+export type Env =
+    'center'
+
+export type Token =
+    H | Format
     | 'uli' | 'oli'
     | 'a' | 'img'
     | '$' | '$$'
+    | 'center'
     | 'tikz'
     | 'esc'
     | 'txt'
     | 'blank' | 'eol' | 'hr'
 
-export type typeElement =
-    h
-    | 'b' | 'i' | 'u'
-    | 'p'
-    | 'ul' | 'ol'
-    | 'li'
-    | 'hr'
-
-
 export type action = {
-    [key in tokens]: (tkn: moo.Token) => void
+    [key in Token]: (tkn: moo.Token) => void
 }
 
 export interface Renderer {
-    startElement: (type: typeElement, id: number) => void
-    endElement: (type: typeElement) => void
+    startElement: (type: Element, id: number) => void
+    endElement: (type: Element) => void
+    startEnv: (type: Env) => void
+    endEnv: (type: Env) => void
     txt: (val: string) => void
+    hr: () => void
     eol: () => void
     blank: () => void
     a: (title: string, href: string, id: number) => void
@@ -55,6 +59,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         , img: /!\[[^\]\n]*\]\([^)\n]*\)/
         , $$: /^\$\$$(?:\\\$|[^$])+^\$\$\n/
         , $: /\$(?:\\\$|[^\n$])+\$/
+        , center: /^\\center$/
         , tikz: /\\begin\{tikzpicture\}[^]*?\\end\{tikzpicture\}/
         , hr: /^--$/
         , esc: /\*\*|\/\/|__/
@@ -65,51 +70,72 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
 
     lexer.reset(markDown)
 
-    const stack: typeElement[] = []
+    const elements: Element[] = []
+    const envs: Env[] = []
     let id = 0
-    const top = () => stack[stack.length - 1]
+    const topElement = () => elements[elements.length - 1]
+    const topEnv = () => envs[envs.length - 1]
 
-    const pop = () => {
-        const el = stack.pop() as typeElement
-        renderers.forEach(
-            p => p.endElement(el)
+    const popElement = () => {
+        const el = elements.pop() as Element
+        renderers.forEach(r =>
+            r.endElement(el)
         )
     }
 
-    const clearStack = () => {
-        while (stack.length) pop()
-    }
-
-    const push = (type: typeElement) => {
-        stack.push(type)
-        id++
-        renderers.forEach(
-            p => p.startElement(type, id)
+    const popEnv = () => {
+        const env = envs.pop() as Env
+        renderers.forEach(r =>
+            r.endEnv(env)
         )
     }
 
-    const h = (type: h) => {
-        clearStack()
-        push(type)
+    const clearElements = () => {
+        while (elements.length) popElement()
     }
 
-    const del = (type: typeElement) => {
-        if (top() === type) {
-            pop()
+    const clearEnvs = () => {
+        while (envs.length) popEnv()
+    }
+
+    const pushElement = (type: Element) => {
+        elements.push(type)
+
+        renderers.forEach(r =>
+            r.startElement(type, id)
+        )
+    }
+
+    const pushEnv = (type: Env) => {
+        envs.push(type)
+
+        renderers.forEach(r =>
+            r.startEnv(type)
+        )
+    }
+
+    const h = (type: H) => {
+        clearElements()
+        pushElement(type)
+    }
+
+    const format = (type: Element) => {
+        if (topElement() === type) {
+            popElement()
             return
         }
-        if (!stack.length) push('p')
-        push(type)
+        if (!elements.length) pushElement('p')
+        pushElement(type)
     }
 
     const list = (type: 'ul' | 'ol') => {
-        while (stack.length && top() !== type) pop()
-        if (top() !== type) push(type)
-        push('li')
+        while (elements.length && topElement() !== type) popElement()
+        if (topElement() !== type) pushElement(type)
+        pushElement('li')
     }
 
     const reLink = /!?\[([^\]]*)\]\(([^)]*)\)/
-    const extracLink = (link: string) => {
+    const extractLink = (link: string) => {
         const res = reLink.exec(link) as RegExpExecArray
         return [res[1], res[2]]
     }
@@ -122,96 +148,95 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         , h3: () => h('h3')
         , h2: () => h('h2')
         , h1: () => h('h1')
-        , b: () => del('b')
-        , i: () => del('i')
-        , u: () => del('u')
+        , b: () => format('b')
+        , i: () => format('i')
+        , u: () => format('u')
         , uli: () => list('ul')
         , oli: () => list('ol')
         // LINK
         , a: (token) => {
-            if (!stack.length) push('p')
-            const [title, href] = extracLink(token.text)
-            id++
-            renderers.forEach(
-                p => p.a(title, href, id)
+            if (!elements.length) pushElement('p')
+            const [title, href] = extractLink(token.text)
+            renderers.forEach(r =>
+                r.a(title, href, id)
             )
         }
         , img: (token) => {
-            if (!stack.length) push('p')
-            const [title, href] = extracLink(token.text)
-            id++
-            renderers.forEach(
-                p => p.img(title, href, id)
+            if (!elements.length) pushElement('p')
+            const [title, href] = extractLink(token.text)
+            renderers.forEach(r =>
+                r.img(title, href, id)
             )
         }
         // MATH
         , $$: (token) => {
             const txt = token.text
             const tex = txt.substring(3, txt.length - 4)
-            id++
             renderers.forEach(
-                p => p.$$(tex, id)
+                r => r.$$(tex, id)
             )
         }
         , $: (token) => {
-            if (!stack.length) push('p')
+            if (!elements.length) pushElement('p')
             const txt = token.text
             const tex = txt.substring(1, txt.length - 1)
-            id++
             renderers.forEach(
-                p => p.$(tex, id)
+                r => r.$(tex, id)
             )
+        }
+        // CENTER
+        , center: () => {
+            clearElements()
+            if (topEnv() === 'center') popEnv()
+            else pushEnv('center')
         }
         // TIKZ
         , tikz: (token) => {
-            id++
-            renderers.forEach(
-                p => p.tikz(token.text, id)
+            renderers.forEach(r =>
+                r.tikz(token.text, id)
             )
         }
         // HR
         , hr: () => {
-            id++
-            clearStack()
-            renderers.forEach(
-                p => {
-                    p.startElement('hr', id)
-                    p.endElement('hr')
-                }
+            clearElements()
+            renderers.forEach(r =>
+                r.hr()
             )
         }
         // ESC
         , esc: () => { }
         // VAL
         , txt: (token) => {
-            if (!stack.length) push('p')
-            renderers.forEach(
-                p => p.txt(token.text)
+            if (!elements.length) pushElement('p')
+            renderers.forEach(r =>
+                r.txt(token.text)
             )
         }
         // EOL
         , blank: () => {
-            clearStack()
-            renderers.forEach(
-                p => p.blank()
+            clearElements()
+            renderers.forEach(r =>
+                r.blank()
             )
         }
         , eol: () => {
             while (
-                stack.length
-                && top() !== 'p'
-                && top() !== 'li') pop()
+                elements.length
+                && topElement() !== 'p'
+                && topElement() !== 'li') popElement()
             renderers.forEach(
-                p => p.eol()
+                r => r.eol()
             )
         }
     }
 
     while (true) {
+        id++
         const token = lexer.next()
         if (token === undefined) break
-        actions[token.type as tokens](token)
+        actions[token.type as Token](token)
     }
 
-    clearStack()
+    clearElements()
+    clearEnvs()
 }               
