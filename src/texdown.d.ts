@@ -1,6 +1,7 @@
 import * as moo from 'moo';
-export declare type tokens = 'h6' | 'h5' | 'h4' | 'h3' | 'h2' | 'h1' | 'b' | 'i' | 'u' | 'uli' | 'oli' | 'a' | 'img' | '$' | '$$' | 'tikz' | 'esc' | 'txt' | 'blank' | 'eol';
-export declare type typeElement = 'h6' | 'h5' | 'h4' | 'h3' | 'h2' | 'h1' | 'b' | 'i' | 'u' | 'p' | 'ul' | 'ol' | 'li';
+export declare type h = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+export declare type tokens = h | 'b' | 'i' | 'u' | 'uli' | 'oli' | 'a' | 'img' | '$' | '$$' | 'tikz' | 'esc' | 'txt' | 'blank' | 'eol';
+export declare type typeElement = h | 'b' | 'i' | 'u' | 'p' | 'ul' | 'ol' | 'li';
 export declare type action = {
     [key in tokens]: (tkn: moo.Token) => void;
 };

@@ -1,7 +1,8 @@
 import * as moo from 'moo'
 
+export type h = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
 export type tokens =
-    'h6' | 'h5' | 'h4' | 'h3' | 'h2' | 'h1'
+    h
     | 'b' | 'i' | 'u'
     | 'uli' | 'oli'
     | 'a' | 'img'
@@ -12,7 +13,7 @@ export type tokens =
     | 'blank' | 'eol'
 
 export type typeElement =
-    'h6' | 'h5' | 'h4' | 'h3' | 'h2' | 'h1'
+    h
     | 'b' | 'i' | 'u'
     | 'p'
     | 'ul' | 'ol'
@@ -81,12 +82,9 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         )
     }
 
-    const newElement = (type: typeElement) => {
-        stack.push(type)
-        id++
-        renderers.forEach(
-            p => p.startElement(type, id)
-        )
+    const h = (type: h) => {
+        while (stack.length) pop()
+        push(type)
     }
 
     const del = (type: typeElement) => {
@@ -112,12 +110,12 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
 
     const actions: action = {
         // ELEMENT
-        h6: () => newElement('h6')
-        , h5: () => newElement('h5')
-        , h4: () => newElement('h4')
-        , h3: () => newElement('h3')
-        , h2: () => newElement('h2')
-        , h1: () => newElement('h1')
+        h6: () => h('h6')
+        , h5: () => h('h5')
+        , h4: () => h('h4')
+        , h3: () => h('h3')
+        , h2: () => h('h2')
+        , h1: () => h('h1')
         , b: () => del('b')
         , i: () => del('i')
         , u: () => del('u')
