@@ -1,9 +1,9 @@
 import 'mocha';
 import { expect } from 'chai';
-import { texDown, Parser, typeElement } from '../src/texdown';
+import { texDown, Renderer, typeElement } from '../src/texdown';
 
 
-class TestParser implements Parser {
+class TestParser implements Renderer {
     public res = ''
 
     startElement = (type: typeElement) => {
@@ -134,7 +134,7 @@ describe('texDown', () => {
         const parser = new TestParser()
         texDown(img, parser)
         expect(parser.res).to.eq(
-            "<img title='ninja' src='ninja.png' />"
+            "<p><img title='ninja' src='ninja.png' /></p>"
         )
     })
 

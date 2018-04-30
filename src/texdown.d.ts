@@ -4,7 +4,7 @@ export declare type typeElement = 'h6' | 'h5' | 'h4' | 'h3' | 'h2' | 'h1' | 'b' 
 export declare type action = {
     [key in tokens]: (tkn: moo.Token) => void;
 };
-export interface Parser {
+export interface Renderer {
     startElement: (type: typeElement) => void;
     endElement: (type: typeElement) => void;
     txt: (val: string) => void;
@@ -16,4 +16,4 @@ export interface Parser {
     $$: (tex: string) => void;
     tikz: (tikz: string) => void;
 }
-export declare function texDown(markDown: string, ...parsers: Parser[]): void;
+export declare function texDown(markDown: string, ...renderers: Renderer[]): void;
