@@ -75,15 +75,17 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
 
     const push = (type: typeElement) => {
         stack.push(type)
+        id++
         renderers.forEach(
-            p => p.startElement(type, id++)
+            p => p.startElement(type, id)
         )
     }
 
     const newElement = (type: typeElement) => {
         stack.push(type)
+        id++
         renderers.forEach(
-            p => p.startElement(type, id++)
+            p => p.startElement(type, id)
         )
     }
 
@@ -125,37 +127,42 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         , a: (token) => {
             if (!stack.length) push('p')
             const [title, href] = extracLink(token.text)
+            id++
             renderers.forEach(
-                p => p.a(title, href, id++)
+                p => p.a(title, href, id)
             )
         }
         , img: (token) => {
             if (!stack.length) push('p')
             const [title, href] = extracLink(token.text)
+            id++
             renderers.forEach(
-                p => p.img(title, href, id++)
+                p => p.img(title, href, id)
             )
         }
         // MATH
         , $$: (token) => {
             const txt = token.text
             const tex = txt.substring(3, txt.length - 4)
+            id++
             renderers.forEach(
-                p => p.$$(tex, id++)
+                p => p.$$(tex, id)
             )
         }
         , $: (token) => {
             if (!stack.length) push('p')
             const txt = token.text
             const tex = txt.substring(1, txt.length - 1)
+            id++
             renderers.forEach(
-                p => p.$(tex, id++)
+                p => p.$(tex, id)
             )
         }
         // TIKZ
         , tikz: (token) => {
+            id++
             renderers.forEach(
-                p => p.tikz(token.text, id++)
+                p => p.tikz(token.text, id)
             )
         }
         // ESC
