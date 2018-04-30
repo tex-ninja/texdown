@@ -24,16 +24,16 @@ export type action = {
 }
 
 export interface Renderer {
-    startElement: (type: typeElement) => void
+    startElement: (type: typeElement, id: number) => void
     endElement: (type: typeElement) => void
     txt: (val: string) => void
     eol: () => void
     blank: () => void
-    a: (title: string, href: string) => void
-    img: (title: string, src: string) => void
-    $: (tex: string) => void
-    $$: (tex: string) => void
-    tikz: (tikz: string) => void
+    a: (title: string, href: string, id: number) => void
+    img: (title: string, src: string, id: number) => void
+    $: (tex: string, id: number) => void
+    $$: (tex: string, id: number) => void
+    tikz: (tikz: string, id: number) => void
 }
 
 export function texDown(markDown: string, ...renderers: Renderer[]) {
@@ -63,6 +63,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
     lexer.reset(markDown)
 
     const stack: typeElement[] = []
+    let id = 0
     const top = () => stack[stack.length - 1]
 
     const pop = () => {
@@ -75,14 +76,14 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
     const push = (type: typeElement) => {
         stack.push(type)
         renderers.forEach(
-            p => p.startElement(type)
+            p => p.startElement(type, id++)
         )
     }
 
     const newElement = (type: typeElement) => {
         stack.push(type)
         renderers.forEach(
-            p => p.startElement(type)
+            p => p.startElement(type, id++)
         )
     }
 
@@ -125,14 +126,14 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
             if (!stack.length) push('p')
             const [title, href] = extracLink(token.text)
             renderers.forEach(
-                p => p.a(title, href)
+                p => p.a(title, href, id++)
             )
         }
         , img: (token) => {
             if (!stack.length) push('p')
             const [title, href] = extracLink(token.text)
             renderers.forEach(
-                p => p.img(title, href)
+                p => p.img(title, href, id++)
             )
         }
         // MATH
@@ -140,7 +141,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
             const txt = token.text
             const tex = txt.substring(3, txt.length - 4)
             renderers.forEach(
-                p => p.$$(tex)
+                p => p.$$(tex, id++)
             )
         }
         , $: (token) => {
@@ -148,13 +149,13 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
             const txt = token.text
             const tex = txt.substring(1, txt.length - 1)
             renderers.forEach(
-                p => p.$(tex)
+                p => p.$(tex, id++)
             )
         }
         // TIKZ
         , tikz: (token) => {
             renderers.forEach(
-                p => p.tikz(token.text)
+                p => p.tikz(token.text, id++)
             )
         }
         // ESC

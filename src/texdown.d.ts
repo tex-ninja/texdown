@@ -5,15 +5,15 @@ export declare type action = {
     [key in tokens]: (tkn: moo.Token) => void;
 };
 export interface Renderer {
-    startElement: (type: typeElement) => void;
+    startElement: (type: typeElement, id: number) => void;
     endElement: (type: typeElement) => void;
     txt: (val: string) => void;
     eol: () => void;
     blank: () => void;
-    a: (title: string, href: string) => void;
-    img: (title: string, src: string) => void;
-    $: (tex: string) => void;
-    $$: (tex: string) => void;
-    tikz: (tikz: string) => void;
+    a: (title: string, href: string, id: number) => void;
+    img: (title: string, src: string, id: number) => void;
+    $: (tex: string, id: number) => void;
+    $$: (tex: string, id: number) => void;
+    tikz: (tikz: string, id: number) => void;
 }
 export declare function texDown(markDown: string, ...renderers: Renderer[]): void;
