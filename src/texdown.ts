@@ -8,15 +8,15 @@ export type Element =
     | 'ul' | 'ol'
     | 'li'
 
-export type Env =
-    'center'
+export type Env = 'center'
+export type Cmd = 'vspace'
 
 export type Token =
     H | Format
     | 'uli' | 'oli'
     | 'a' | 'img'
     | '$' | '$$'
-    | 'center'
+    | 'env' | 'cmd'
     | 'tikz'
     | 'esc'
     | 'txt'
@@ -26,11 +26,38 @@ export type action = {
     [key in Token]: (tkn: moo.Token) => void
 }
 
+const tokens: { [key in Token]: any } = {
+    h6: /^###### /
+    , h5: /^##### /
+    , h4: /^#### /
+    , h3: /^### /
+    , h2: /^## /
+    , h1: /^# /
+    , b: '*'
+    , i: '/'
+    , u: '_'
+    , uli: /^\- /
+    , oli: /^\d+\. /
+    , a: /\[[^\]\n]*\]\([^)\n]*\)/
+    , img: /!\[[^\]\n]*\]\([^)\n]*\)/
+    , $$: /^\$\$$(?:\\\$|[^$])+^\$\$\n/
+    , $: /\$(?:\\\$|[^\n$])+\$/
+    , tikz: /\\begin\{tikzpicture\}[^]*?\\end\{tikzpicture\}/
+    , env: /^\\\w+$/
+    , cmd: /\\\w+\{[^}]*\}/
+    , hr: /^--$/
+    , esc: /\*\*|\/\/|__/
+    , txt: /[^/!\n*_$\\]+|[!*_$\\/]/
+    , blank: { match: /^\n/, lineBreaks: true }
+    , eol: { match: /\n/, lineBreaks: true }
+}
+
 export interface Renderer {
     startElement: (type: Element, id: number) => void
     endElement: (type: Element) => void
     startEnv: (type: Env) => void
     endEnv: (type: Env) => void
+    cmd: (name: Cmd, arg: string) => void
     txt: (val: string) => void
     hr: () => void
     eol: () => void
@@ -43,30 +70,7 @@ export interface Renderer {
 }
 
 export function texDown(markDown: string, ...renderers: Renderer[]) {
-    const lexer = moo.compile({
-        h6: /^###### /
-        , h5: /^##### /
-        , h4: /^#### /
-        , h3: /^### /
-        , h2: /^## /
-        , h1: /^# /
-        , b: '*'
-        , i: '/'
-        , u: '_'
-        , uli: /^\- /
-        , oli: /^\d+\. /
-        , a: /\[[^\]\n]*\]\([^)\n]*\)/
-        , img: /!\[[^\]\n]*\]\([^)\n]*\)/
-        , $$: /^\$\$$(?:\\\$|[^$])+^\$\$\n/
-        , $: /\$(?:\\\$|[^\n$])+\$/
-        , center: /^\\center$/
-        , tikz: /\\begin\{tikzpicture\}[^]*?\\end\{tikzpicture\}/
-        , hr: /^--$/
-        , esc: /\*\*|\/\/|__/
-        , txt: /[^/!\n*_$\\]+|[!*_$\\/]/
-        , blank: { match: /^\n/, lineBreaks: true }
-        , eol: { match: /\n/, lineBreaks: true }
-    })
+    const lexer = moo.compile(tokens)
 
     lexer.reset(markDown)
 
@@ -140,6 +144,12 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         return [res[1], res[2]]
     }
 
+    const reCmd = /\\(\w+)\{([^}]*)\}/
+    const extractCmd = (cmd: string): [Cmd, string] => {
+        const res = reCmd.exec(cmd) as RegExpExecArray
+        return [res[1] as Cmd, res[2]]
+    }
+
     const actions: action = {
         // ELEMENT
         h6: () => h('h6')
@@ -184,11 +194,18 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
                 r => r.$(tex, id)
             )
         }
-        // CENTER
-        , center: () => {
+        // ENV + CMD
+        , env: (token) => {
+            const env = token.text.substr(1) as Env
             clearElements()
-            if (topEnv() === 'center') popEnv()
-            else pushEnv('center')
+            if (topEnv() === env) popEnv()
+            else pushEnv(env)
+        }
+        , cmd: (token) => {
+            const [name, arg] = extractCmd(token.text)
+            renderers.forEach(r => {
+                r.cmd(name, arg)
+            })
         }
         // TIKZ
         , tikz: (token) => {
