@@ -1,4 +1,4 @@
-import * as moo from 'moo'
+import * as moo from 'moo';
 
 export type H = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
 export type Format = | 'b' | 'i' | 'u'
@@ -180,6 +180,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         }
         // MATH
         , $$: (token) => {
+            clearElements()
             const txt = token.text
             const tex = txt.substring(3, txt.length - 4)
             renderers.forEach(
