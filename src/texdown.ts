@@ -42,9 +42,9 @@ const tokens: { [key in Token]: any } = {
     , img: /!\[[^\]\n]*\]\([^)\n]*\)/
     , $$: /^\$\$$(?:\\\$|[^$])+^\$\$\n/
     , $: /\$(?:\\\$|[^\n$])+\$/
-    , tikz: /\\begin\{tikzpicture\}[^]*?\\end\{tikzpicture\}/
+    , tikz: /^\\begin\{tikzpicture\}[^]*?^\\end\{tikzpicture\}/
+    , cmd: /^\\\w+\{[^}]*\}$/
     , env: /^\\\w+$/
-    , cmd: /\\\w+\{[^}]*\}/
     , hr: /^--$/
     , esc: /\*\*|\/\/|__/
     , txt: /[^/!\n*_$\\]+|[!*_$\\/]/
