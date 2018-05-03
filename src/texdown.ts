@@ -47,7 +47,7 @@ const tokens: { [key in Token]: any } = {
     , env: /^\\\w+$/
     , hr: /^--$/
     , esc: /\*\*|\/\/|__/
-    , txt: /[^/!\n*_$\\]+|[!*_$\\/]/
+    , txt: /[^/!\n*_$\\\[\]]+|[!*_$\\/\[\]]/
     , blank: { match: /^\n/, lineBreaks: true }
     , eol: { match: /\n/, lineBreaks: true }
 }

@@ -134,12 +134,12 @@ describe('texDown', () => {
         )
     })
 
-    const a = '[tex.ninja](http://tex.ninja)'
+    const a = 'a [tex.ninja](http://tex.ninja)'
     it(a, () => {
         const renderer = new Test()
         texDown(a, renderer)
         expect(renderer.res).to.eq(
-            "<p><a href='http://tex.ninja'>tex.ninja</a></p>"
+            "<p>a <a href='http://tex.ninja'>tex.ninja</a></p>"
         )
     })
 
