@@ -75,10 +75,12 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
     lexer.reset(markDown)
 
     const elements: Element[] = []
-    const envs: Env[] = []
+    const envs: { [env in Env]: boolean } = {
+        center: false
+    }
+
     let id = 0
     const topElement = () => elements[elements.length - 1]
-    const topEnv = () => envs[envs.length - 1]
 
     const popElement = () => {
         const el = elements.pop() as Element
@@ -87,8 +89,8 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         )
     }
 
-    const popEnv = () => {
-        const env = envs.pop() as Env
+    const endEnv = (env: Env) => {
+        envs[env] = false
         renderers.forEach(r =>
             r.endEnv(env)
         )
@@ -99,7 +101,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
     }
 
     const clearEnvs = () => {
-        while (envs.length) popEnv()
+
     }
 
     const pushElement = (type: Element) => {
@@ -199,7 +201,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         , env: (token) => {
             const env = token.text.substr(1) as Env
             clearElements()
-            if (topEnv() === env) popEnv()
+            if (topEnv() === env) endEnv()
             else pushEnv(env)
         }
         , cmd: (token) => {
