@@ -161,12 +161,12 @@ describe('texDown', () => {
         )
     })
 
-    const hr = '--'
+    const hr = '# hr\n\n--'
     it(hr, () => {
         const renderer = new Test()
         texDown(hr, renderer)
         expect(renderer.res).to.eq(
-            `<hr />`
+            `<h1>hr</h1><hr />`
         )
     })
 
