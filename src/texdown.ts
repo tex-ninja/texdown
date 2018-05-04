@@ -101,7 +101,9 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
     }
 
     const clearEnvs = () => {
-
+        renderers.forEach(r => {
+            if (envs.center) r.endEnv('center')
+        })
     }
 
     const pushElement = (type: Element) => {
@@ -112,11 +114,10 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         )
     }
 
-    const pushEnv = (type: Env) => {
-        envs.push(type)
-
+    const startEnv = (env: Env) => {
+        envs[env] = true
         renderers.forEach(r =>
-            r.startEnv(type)
+            r.startEnv(env)
         )
     }
 
@@ -201,8 +202,8 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         , env: (token) => {
             const env = token.text.substr(1) as Env
             clearElements()
-            if (topEnv() === env) endEnv()
-            else pushEnv(env)
+            if (envs[env]) endEnv(env)
+            else startEnv(env)
         }
         , cmd: (token) => {
             const [name, arg] = extractCmd(token.text)
