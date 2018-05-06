@@ -40,7 +40,7 @@ const tokens: { [key in Token]: any } = {
     , oli: /^\d+\. /
     , a: /\[[^\]\n]*\]\([^)\n]*\)/
     , img: /!\[[^\]\n]*\]\([^)\n]*\)/
-    , $$: /^\$\$$(?:\\\$|[^$])+^\$\$\n/
+    , $$: /^\$\$$(?:\\\$|[^$])+^\$\$$/
     , $: /\$(?:\\\$|[^\n$])+\$/
     , tikz: /^\\begin\{tikzpicture\}[^]*?^\\end\{tikzpicture\}/
     , cmd: /^\\\w+\{[^}]*\}$/
@@ -185,7 +185,9 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         , $$: (token) => {
             clearElements()
             const txt = token.text
-            const tex = txt.substring(3, txt.length - 4)
+            const tex = txt.length === 5
+                ? ''
+                : txt.substring(3, txt.length - 3)
             renderers.forEach(
                 r => r.$$(tex, id)
             )

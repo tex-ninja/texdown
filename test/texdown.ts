@@ -116,12 +116,12 @@ describe('texDown', () => {
         )
     })
 
-    const $$ = '$$\ntex\n$$\n'
+    const $$ = '$$\ntex\n$$\n$$\n$$\n'
     it($$, () => {
         const renderer = new Test()
         texDown($$, renderer)
         expect(renderer.res).to.eq(
-            '<$$>tex</$$>'
+            '<$$>tex</$$><$$></$$>'
         )
     })
 
