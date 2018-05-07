@@ -41,6 +41,7 @@ class Test implements Renderer {
 
     eol = () => { }
     blank = () => { }
+    done = () => { }
 }
 
 describe('texDown', () => {

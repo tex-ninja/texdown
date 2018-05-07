@@ -67,6 +67,7 @@ export interface Renderer {
     $: (tex: string, id: number) => void
     $$: (tex: string, id: number) => void
     tikz: (tikz: string, id: number) => void
+    done: () => void
 }
 
 export function texDown(markDown: string, ...renderers: Renderer[]) {
@@ -262,4 +263,5 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
 
     clearElements()
     clearEnvs()
+    renderers.forEach(r => r.done())
 }               
