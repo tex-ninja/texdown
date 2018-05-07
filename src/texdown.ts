@@ -186,9 +186,15 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         , $$: (token) => {
             clearElements()
             const txt = token.text
-            const tex = txt.length === 5
-                ? ''
-                : txt.substring(3, txt.length - 3)
+            const tex = txt.substring(2, txt.length - 2)
+            console.log(
+                '[$$$$$$]'
+                , token.text.replace(/\n/g, '\\n')
+            )
+            console.log(
+                '[$$$$$$]'
+                , tex.replace(/\n/g, '\\n')
+            )
             renderers.forEach(
                 r => r.$$(tex, id)
             )
