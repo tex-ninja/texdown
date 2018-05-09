@@ -28,3 +28,7 @@ TeXDown is a work in progress.
 | !\[image\](https://bit.ly/2K9maeN)| ![image](https://bit.ly/2K9maeN)                       |
 | $a^2 + b^2 = c^ 2$                | ![](https://bit.ly/2KODTsT)                            |
 | $$<br>a^2 + b^2 = c^ 2<br>$$      | <div align='center'>![](https://bit.ly/2KODTsT)</div>  |
+
+## Live example
+
+See live example at [tex.ninja](http://tex.ninja)
