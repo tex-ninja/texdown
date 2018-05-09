@@ -26,4 +26,4 @@ TeXDown is a work in progress.
 | ###### h6                         | <h6>h6</h6>                                         |
 | \[link\](http://example.com)      | [link](http://example.com)                          |
 | !\[image\](https://bit.ly/2K9maeN)| ![image](https://bit.ly/2K9maeN)                    |
-| $a^2 + b^2 = c^ 2$                | [](https://bit.ly/2KODTsT)                          |
+| $a^2 + b^2 = c^ 2$                | ![](https://bit.ly/2KODTsT)                         |
