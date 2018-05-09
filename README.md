@@ -12,5 +12,5 @@ TeXDown is a work in progress.
 ## The Language
 
 | TeXdowN | Html |
-------------------
+----------|-------|
 | \*bold\*| **bold**|
