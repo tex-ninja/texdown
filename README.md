@@ -24,4 +24,5 @@ TeXDown is a work in progress.
 | #### h4                        | <h4>h4</h4>                                         |
 | ##### h5                       | <h5>h5</h5>                                         |
 | ###### h6                      | <h6>h6</h6>                                         |
-| \[link\](http://example.com)   | [link](http://example.com)
+| \[link\](http://example.com)   | [link](http://example.com)                          |
+| !\[image\](http://example.com) | ![image](https://bit.ly/2K9maeN)                          |
