@@ -15,7 +15,7 @@ TeXDown is a work in progress.
 | TeXdowN           | Html              |
 ----------          |-------            |
 | \*bold\*          | **bold**          |
-| \_underline\_     | <u>underline</u>  |
+| \_underline\_     | <u style='text-decoration:underline'>underline</u>  |
 | /italic/          | <i>italic</i>     |
 | # h1              | <h1>h1</h1>       |
 | ## h2             | <h2>h2</h2>       |
