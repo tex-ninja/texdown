@@ -1,6 +1,6 @@
 {
     "name": "texdown",
-    "version": "1.1.2",
+    "version": "1.1.3",
     "description": "",
     "main": "src/texdown.js",
     "types": "src/texdown.d.ts",
