@@ -46,7 +46,7 @@ class Test implements Renderer {
 
 describe('texDown', () => {
     const h6 = '###### h6'
-    xit(h6, () => {
+    it(h6, () => {
         const p = new Test()
         texDown(h6, p)
         expect(p.res).to.eq(
@@ -55,7 +55,7 @@ describe('texDown', () => {
     })
 
     const h5 = '##### h5'
-    xit(h5, () => {
+    it(h5, () => {
         const renderer = new Test()
         texDown(h5, renderer)
         expect(renderer.res).to.eq(
@@ -64,7 +64,7 @@ describe('texDown', () => {
     })
 
     const b = '*b*'
-    xit(b, () => {
+    it(b, () => {
         const renderer = new Test()
         texDown(b, renderer)
         expect(renderer.res).to.eq(
@@ -73,7 +73,7 @@ describe('texDown', () => {
     })
 
     const i = '/i/'
-    xit(i, () => {
+    it(i, () => {
         const renderer = new Test()
         texDown(i, renderer)
         expect(renderer.res).to.eq(
@@ -82,7 +82,7 @@ describe('texDown', () => {
     })
 
     const u = '_u_'
-    xit(u, () => {
+    it(u, () => {
         const renderer = new Test()
         texDown(u, renderer)
         expect(renderer.res).to.eq(
@@ -91,7 +91,7 @@ describe('texDown', () => {
     })
 
     const p = 'do\ng'
-    xit(p, () => {
+    it(p, () => {
         const renderer = new Test()
         texDown(p, renderer)
         expect(renderer.res).to.eq(
@@ -100,7 +100,7 @@ describe('texDown', () => {
     })
 
     const ul = '- i1\n- i2'
-    xit(ul, () => {
+    it(ul, () => {
         const renderer = new Test()
         texDown(ul, renderer)
         expect(renderer.res).to.eq(
@@ -109,7 +109,7 @@ describe('texDown', () => {
     })
 
     const ol = '1. i1\n2. i2'
-    xit(ol, () => {
+    it(ol, () => {
         const renderer = new Test()
         texDown(ol, renderer)
         expect(renderer.res).to.eq(
@@ -145,7 +145,7 @@ describe('texDown', () => {
     })
 
     const $ = '$tex$'
-    xit($, () => {
+    it($, () => {
         const renderer = new Test()
         texDown($, renderer)
         expect(renderer.res).to.eq(
@@ -154,7 +154,7 @@ describe('texDown', () => {
     })
 
     const a = 'a [tex.ninja](http://tex.ninja)'
-    xit(a, () => {
+    it(a, () => {
         const renderer = new Test()
         texDown(a, renderer)
         expect(renderer.res).to.eq(
@@ -163,7 +163,7 @@ describe('texDown', () => {
     })
 
     const img = '![ninja](ninja.png)'
-    xit(img, () => {
+    it(img, () => {
         const renderer = new Test()
         texDown(img, renderer)
         expect(renderer.res).to.eq(
@@ -172,7 +172,7 @@ describe('texDown', () => {
     })
 
     const tikz = '\\begin{tikzpicture}\ntikz\n\\end{tikzpicture}'
-    xit(tikz, () => {
+    it(tikz, () => {
         const renderer = new Test()
         texDown(tikz, renderer)
         expect(renderer.res).to.eq(
@@ -181,7 +181,7 @@ describe('texDown', () => {
     })
 
     const hr = '# hr\n\n--'
-    xit(hr, () => {
+    it(hr, () => {
         const renderer = new Test()
         texDown(hr, renderer)
         expect(renderer.res).to.eq(
@@ -190,7 +190,7 @@ describe('texDown', () => {
     })
 
     const center = '\\center'
-    xit(center, () => {
+    it(center, () => {
         const renderer = new Test()
         texDown(center, renderer)
         expect(renderer.res).to.eq(
@@ -199,7 +199,7 @@ describe('texDown', () => {
     })
 
     const cmd = '\\vspace{1cm}'
-    xit(cmd, () => {
+    it(cmd, () => {
         const renderer = new Test()
         texDown(cmd, renderer)
         expect(renderer.res).to.eq(
@@ -208,11 +208,20 @@ describe('texDown', () => {
     })
 
     const format = '*b*/i/_u_'
-    xit(format, () => {
+    it(format, () => {
         const renderer = new Test()
         texDown(format, renderer)
         expect(renderer.res).to.eq(
             `<p><b>b</b><i>i</i><u>u</u></p>`
+        )
+    })
+
+    const esc = '//__**'
+    it(esc, () => {
+        const renderer = new Test()
+        texDown(esc, renderer)
+        expect(renderer.res).to.eq(
+            `/_*`
         )
     })
 })

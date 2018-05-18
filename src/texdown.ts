@@ -33,6 +33,7 @@ const tokens: { [key in Token]: any } = {
     , h3: /^### /
     , h2: /^## /
     , h1: /^# /
+    , esc: /\*\*|\/\/|__/
     , b: '*'
     , i: '/'
     , u: '_'
@@ -46,7 +47,6 @@ const tokens: { [key in Token]: any } = {
     , cmd: /^\\\w+\{[^}]*\}$/
     , env: /^\\\w+$/
     , hr: /^--$/
-    , esc: /\*\*|\/\/|__/
     , txt: /[^/!\n*_$\\\[\]]+|[!*_$\\/\[\]]/
     , blank: { match: /^\n/, lineBreaks: true }
     , eol: { match: /\n/, lineBreaks: true }
@@ -226,7 +226,11 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
             )
         }
         // ESC
-        , esc: () => { }
+        , esc: (token) => {
+            renderers.forEach(r =>
+                r.txt(token.text[0])
+            )
+        }
         // VAL
         , txt: (token) => {
             if (!elements.length) pushElement('p')
