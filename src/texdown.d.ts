@@ -14,6 +14,7 @@ export interface Renderer {
     startEnv: (type: Env) => void;
     endEnv: (type: Env) => void;
     cmd: (name: Cmd, arg: string) => void;
+    esc: (val: string) => void;
     txt: (val: string) => void;
     hr: () => void;
     eol: () => void;

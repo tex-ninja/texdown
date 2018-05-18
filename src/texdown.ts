@@ -58,6 +58,7 @@ export interface Renderer {
     startEnv: (type: Env) => void
     endEnv: (type: Env) => void
     cmd: (name: Cmd, arg: string) => void
+    esc: (val: string) => void
     txt: (val: string) => void
     hr: () => void
     eol: () => void
@@ -228,7 +229,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         // ESC
         , esc: (token) => {
             renderers.forEach(r =>
-                r.txt(token.text[0])
+                r.esc(token.text)
             )
         }
         // VAL

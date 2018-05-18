@@ -36,6 +36,7 @@ class Test implements Renderer {
     img = (title: string, src: string) =>
         this.res += `<img title='${title}' src='${src}' />`
 
+    esc = (val: string) => this.res += val[0]
     txt = (val: string) => this.res += val
     tikz = (tikz: string) => this.res += `<tikz>${tikz}</tikz>`
 
