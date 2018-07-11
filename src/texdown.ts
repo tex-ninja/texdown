@@ -42,8 +42,8 @@ const tokens: { [key in Token]: any } = {
     , b: '*'
     , i: '/'
     , u: '_'
-    , uli: /^\- /
-    , oli: /^\d+\. /
+    , uli: /^[ \t]*\- /
+    , oli: /^[ \t]*\d+\. /
     , a: /\[[^\]\n]*\]\([^)\n]*\)/
     , img: /!\[[^\]\n]*\]\([^)\n]*\)/
     , $$: /^\$\$$(?:\\\$|[^$])+^\$\$$/
@@ -130,6 +130,8 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         renderers.forEach(r =>
             r.startElement(el.type, id)
         )
+
+        return el
     }
 
     const startEnv = (env: Env) => {
@@ -153,16 +155,29 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         pushElementType(type)
     }
 
-    const li = (type: 'ul' | 'ol') => {
-        while (
-            elements.length
-            && topElement().type !== type) {
+    const li = (type: 'ul' | 'ol', nesting: string) => {
+        const matchingList = () => {
+            const te = topElement()
+            return te
+                && ['ul', 'ol'].includes(te.type)
+                && te.attr.nesting.length <= nesting.length
+        }
+
+        while (elements.length && !matchingList()) {
             popElement()
         }
 
-        if (elements.length === 0
-            || topElement().type !== type) {
-            pushElementType(type)
+
+        const te = topElement()
+        if (!te
+            || te.type !== type
+            || te.attr.nesting !== nesting) {
+            pushElement({
+                type: type
+                , attr: {
+                    nesting: nesting
+                }
+            })
         }
 
         pushElementType('li')
@@ -191,8 +206,8 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         , b: () => format('b')
         , i: () => format('i')
         , u: () => format('u')
-        , uli: () => li('ul')
-        , oli: () => li('ol')
+        , uli: (token) => li('ul', token.text)
+        , oli: (token) => li('ol', token.text.replace(/\d+/, ''))
         // LINK
         , a: (token) => {
             if (!elements.length) pushElementType('p')

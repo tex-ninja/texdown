@@ -109,12 +109,30 @@ describe('texDown', () => {
         )
     })
 
+    const ul2 = '- i1\n - i11\n- i2'
+    it(ul2, () => {
+        const renderer = new Test()
+        texDown(ul2, renderer)
+        expect(renderer.res).to.eq(
+            '<ul><li>i1</li><ul><li>i11</li></ul><li>i2</li></ul>'
+        )
+    })
+
     const ol = '1. i1\n2. i2'
     it(ol, () => {
         const renderer = new Test()
         texDown(ol, renderer)
         expect(renderer.res).to.eq(
             '<ol><li>i1</li><li>i2</li></ol>'
+        )
+    })
+
+    const ol2 = '1. i1\n 1. i11\n2. i2'
+    it(ol2, () => {
+        const renderer = new Test()
+        texDown(ol2, renderer)
+        expect(renderer.res).to.eq(
+            '<ol><li>i1</li><ol><li>i11</li></ol><li>i2</li></ol>'
         )
     })
 
