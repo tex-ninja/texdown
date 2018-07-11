@@ -2,11 +2,16 @@ import * as moo from 'moo';
 
 export type H = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
 export type Format = | 'b' | 'i' | 'u'
-export type Element =
+export type ElementType =
     H | Format
     | 'p'
     | 'ul' | 'ol'
     | 'li'
+
+export type Element = {
+    type: ElementType
+    , attr: { [key: string]: any }
+}
 
 export type Env = 'center'
 export type Cmd = 'vspace'
@@ -53,8 +58,8 @@ const tokens: { [key in Token]: any } = {
 }
 
 export interface Renderer {
-    startElement: (type: Element, id: number) => void
-    endElement: (type: Element) => void
+    startElement: (type: ElementType, id: number) => void
+    endElement: (type: ElementType) => void
     startEnv: (type: Env) => void
     endEnv: (type: Env) => void
     cmd: (name: Cmd, arg: string) => void
@@ -87,7 +92,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
     const popElement = () => {
         const el = elements.pop() as Element
         renderers.forEach(r =>
-            r.endElement(el)
+            r.endElement(el.type)
         )
     }
 
@@ -108,11 +113,22 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         })
     }
 
-    const pushElement = (type: Element) => {
-        elements.push(type)
+    const pushElementType = (type: ElementType) => {
+        elements.push({
+            type: type
+            , attr: {}
+        })
 
         renderers.forEach(r =>
             r.startElement(type, id)
+        )
+    }
+
+    const pushElement = (el: Element) => {
+        elements.push(el)
+
+        renderers.forEach(r =>
+            r.startElement(el.type, id)
         )
     }
 
@@ -125,22 +141,31 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
 
     const h = (type: H) => {
         clearElements()
-        pushElement(type)
+        pushElementType(type)
     }
 
-    const format = (type: Element) => {
-        if (topElement() === type) {
+    const format = (type: ElementType) => {
+        if (elements.length && topElement().type === type) {
             popElement()
             return
         }
-        if (!elements.length) pushElement('p')
-        pushElement(type)
+        if (!elements.length) pushElementType('p')
+        pushElementType(type)
     }
 
-    const list = (type: 'ul' | 'ol') => {
-        while (elements.length && topElement() !== type) popElement()
-        if (topElement() !== type) pushElement(type)
-        pushElement('li')
+    const li = (type: 'ul' | 'ol') => {
+        while (
+            elements.length
+            && topElement().type !== type) {
+            popElement()
+        }
+
+        if (elements.length === 0
+            || topElement().type !== type) {
+            pushElementType(type)
+        }
+
+        pushElementType('li')
     }
 
     const reLink = /!?\[([^\]]*)\]\(([^)]*)\)/
@@ -166,18 +191,18 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         , b: () => format('b')
         , i: () => format('i')
         , u: () => format('u')
-        , uli: () => list('ul')
-        , oli: () => list('ol')
+        , uli: () => li('ul')
+        , oli: () => li('ol')
         // LINK
         , a: (token) => {
-            if (!elements.length) pushElement('p')
+            if (!elements.length) pushElementType('p')
             const [title, href] = extractLink(token.text)
             renderers.forEach(r =>
                 r.a(title, href, id)
             )
         }
         , img: (token) => {
-            if (!elements.length) pushElement('p')
+            if (!elements.length) pushElementType('p')
             const [title, href] = extractLink(token.text)
             renderers.forEach(r =>
                 r.img(title, href, id)
@@ -193,7 +218,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
             )
         }
         , $: (token) => {
-            if (!elements.length) pushElement('p')
+            if (!elements.length) pushElementType('p')
             const txt = token.text
             const tex = txt.substring(1, txt.length - 1)
             renderers.forEach(
@@ -234,7 +259,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         }
         // VAL
         , txt: (token) => {
-            if (!elements.length) pushElement('p')
+            if (!elements.length) pushElementType('p')
             renderers.forEach(r =>
                 r.txt(token.text)
             )
@@ -249,8 +274,8 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         , eol: () => {
             while (
                 elements.length
-                && topElement() !== 'p'
-                && topElement() !== 'li') popElement()
+                && topElement().type !== 'p'
+                && topElement().type !== 'li') popElement()
             renderers.forEach(
                 r => r.eol()
             )

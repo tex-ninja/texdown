@@ -15,12 +15,12 @@
     },
     "homepage": "https://github.com/tex-ninja/marko#readme",
     "devDependencies": {
-        "@types/chai": "^4.1.4",
-        "@types/mocha": "^5.2.4",
+        "@types/chai": "*",
+        "@types/mocha": "*",
         "@types/moo": "*",
-        "chai": "^4.1.2",
-        "mocha": "^5.2.0",
-        "npm-watch": "^0.3.0"
+        "chai": "*",
+        "mocha": "*",
+        "npm-watch": "*"
     },
     "dependencies": {
         "moo": "*"

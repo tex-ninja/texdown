@@ -1,6 +1,6 @@
 import 'mocha';
 import { expect } from 'chai';
-import { texDown, Renderer, Element, Env, Cmd } from '../src/texdown';
+import { texDown, Renderer, ElementType, Env, Cmd } from '../src/texdown';
 
 
 class Test implements Renderer {
@@ -20,11 +20,11 @@ class Test implements Renderer {
 
     hr = () => this.res += '<hr />'
 
-    startElement = (type: Element) => {
+    startElement = (type: ElementType) => {
         this.res += `<${type}>`
     }
 
-    endElement = (type: Element) => {
+    endElement = (type: ElementType) => {
         this.res += `</${type}>`
     }
 
