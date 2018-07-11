@@ -58,8 +58,8 @@ const tokens: { [key in Token]: any } = {
 }
 
 export interface Renderer {
-    startElement: (type: ElementType, id: number) => void
-    endElement: (type: ElementType) => void
+    startElement: (el: Element, id: number) => void
+    endElement: (el: Element) => void
     startEnv: (type: Env) => void
     endEnv: (type: Env) => void
     cmd: (name: Cmd, arg: string) => void
