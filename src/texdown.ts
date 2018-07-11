@@ -10,13 +10,14 @@ export type ElementType =
 
 export type Element = {
     type: ElementType
-    , attr: { [key: string]: any }
+    , token: string
+    , data?: any
 }
 
 export type Env = 'center'
 export type Cmd = 'vspace'
 
-export type Token =
+export type TokenType =
     H | Format
     | 'uli' | 'oli'
     | 'a' | 'img'
@@ -28,10 +29,10 @@ export type Token =
     | 'blank' | 'eol' | 'hr'
 
 export type action = {
-    [key in Token]: (tkn: moo.Token) => void
+    [key in TokenType]: () => void
 }
 
-const tokens: { [key in Token]: any } = {
+const tokens: { [key in TokenType]: any } = {
     h6: /^###### /
     , h5: /^##### /
     , h4: /^#### /
@@ -42,8 +43,8 @@ const tokens: { [key in Token]: any } = {
     , b: '*'
     , i: '/'
     , u: '_'
-    , uli: /^[ \t]*\- /
-    , oli: /^[ \t]*\d+\. /
+    , uli: /^[ ]*\- /
+    , oli: /^[ ]*\d+\. /
     , a: /\[[^\]\n]*\]\([^)\n]*\)/
     , img: /!\[[^\]\n]*\]\([^)\n]*\)/
     , $$: /^\$\$$(?:\\\$|[^$])+^\$\$$/
@@ -77,6 +78,7 @@ export interface Renderer {
 }
 
 export function texDown(markDown: string, ...renderers: Renderer[]) {
+    let currentToken: moo.Token
     const lexer = moo.compile(tokens)
 
     lexer.reset(markDown)
@@ -92,7 +94,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
     const popElement = () => {
         const el = elements.pop() as Element
         renderers.forEach(r =>
-            r.endElement(el.type)
+            r.endElement(el)
         )
     }
 
@@ -113,22 +115,11 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         })
     }
 
-    const pushElementType = (type: ElementType) => {
-        elements.push({
-            type: type
-            , attr: {}
-        })
-
-        renderers.forEach(r =>
-            r.startElement(type, id)
-        )
-    }
-
     const pushElement = (el: Element) => {
         elements.push(el)
 
         renderers.forEach(r =>
-            r.startElement(el.type, id)
+            r.startElement(el, id)
         )
 
         return el
@@ -143,7 +134,10 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
 
     const h = (type: H) => {
         clearElements()
-        pushElementType(type)
+        pushElement({
+            type: type
+            , token: currentToken.text
+        })
     }
 
     const format = (type: ElementType) => {
@@ -151,36 +145,46 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
             popElement()
             return
         }
-        if (!elements.length) pushElementType('p')
-        pushElementType(type)
+        if (!elements.length)
+            pushElement({
+                type: 'p'
+                , token: ''
+            })
+
+        pushElement({
+            type: type
+            , token: currentToken.text
+        })
     }
 
-    const li = (type: 'ul' | 'ol', nesting: string) => {
+    const li = (type: 'ul' | 'ol') => {
+        const nestLevel = currentToken.text.replace(/\d+/, '').length
+
         const matchingList = () => {
             const te = topElement()
             return te
                 && ['ul', 'ol'].includes(te.type)
-                && te.attr.nesting.length <= nesting.length
+                && te.data <= nestLevel
         }
 
         while (elements.length && !matchingList()) {
             popElement()
         }
 
-
         const te = topElement()
-        if (!te
-            || te.type !== type
-            || te.attr.nesting !== nesting) {
+
+        if (!te || te.type !== type || te.data < nestLevel) {
             pushElement({
                 type: type
-                , attr: {
-                    nesting: nesting
-                }
+                , token: ''
+                , data: nestLevel
             })
         }
 
-        pushElementType('li')
+        pushElement({
+            type: 'li'
+            , token: currentToken.text
+        })
     }
 
     const reLink = /!?\[([^\]]*)\]\(([^)]*)\)/
@@ -206,57 +210,66 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         , b: () => format('b')
         , i: () => format('i')
         , u: () => format('u')
-        , uli: (token) => li('ul', token.text)
-        , oli: (token) => li('ol', token.text.replace(/\d+/, ''))
+        , uli: () => li('ul')
+        , oli: () => li('ol')
         // LINK
-        , a: (token) => {
-            if (!elements.length) pushElementType('p')
-            const [title, href] = extractLink(token.text)
+        , a: () => {
+            if (!elements.length) pushElement({
+                type: 'p'
+                , token: ''
+            })
+            const [title, href] = extractLink(currentToken.text)
             renderers.forEach(r =>
                 r.a(title, href, id)
             )
         }
-        , img: (token) => {
-            if (!elements.length) pushElementType('p')
-            const [title, href] = extractLink(token.text)
+        , img: () => {
+            if (!elements.length) pushElement({
+                type: 'p'
+                , token: ''
+            })
+            const [title, href] = extractLink(currentToken.text)
             renderers.forEach(r =>
                 r.img(title, href, id)
             )
         }
         // MATH
-        , $$: (token) => {
+        , $$: () => {
             clearElements()
-            const txt = token.text
+            const txt = currentToken.text
             const tex = txt.substring(2, txt.length - 2)
             renderers.forEach(
                 r => r.$$(tex, id)
             )
         }
-        , $: (token) => {
-            if (!elements.length) pushElementType('p')
-            const txt = token.text
+        , $: () => {
+            if (!elements.length) pushElement({
+                type: 'p'
+                , token: ''
+            })
+            const txt = currentToken.text
             const tex = txt.substring(1, txt.length - 1)
             renderers.forEach(
                 r => r.$(tex, id)
             )
         }
         // ENV + CMD
-        , env: (token) => {
-            const env = token.text.substr(1) as Env
+        , env: () => {
+            const env = currentToken.text.substr(1) as Env
             clearElements()
             if (envs[env]) endEnv(env)
             else startEnv(env)
         }
-        , cmd: (token) => {
-            const [name, arg] = extractCmd(token.text)
+        , cmd: () => {
+            const [name, arg] = extractCmd(currentToken.text)
             renderers.forEach(r => {
                 r.cmd(name, arg)
             })
         }
         // TIKZ
-        , tikz: (token) => {
+        , tikz: () => {
             renderers.forEach(r =>
-                r.tikz(token.text, id)
+                r.tikz(currentToken.text, id)
             )
         }
         // HR
@@ -267,16 +280,19 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
             )
         }
         // ESC
-        , esc: (token) => {
+        , esc: () => {
             renderers.forEach(r =>
-                r.esc(token.text)
+                r.esc(currentToken.text)
             )
         }
         // VAL
-        , txt: (token) => {
-            if (!elements.length) pushElementType('p')
+        , txt: () => {
+            if (!elements.length) pushElement({
+                type: 'p'
+                , token: ''
+            })
             renderers.forEach(r =>
-                r.txt(token.text)
+                r.txt(currentToken.text)
             )
         }
         // EOL
@@ -299,9 +315,9 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
 
     while (true) {
         id++
-        const token = lexer.next()
-        if (token === undefined) break
-        actions[token.type as Token](token)
+        currentToken = lexer.next() as moo.Token
+        if (currentToken === undefined) break
+        actions[currentToken.type as TokenType]()
     }
 
     clearElements()

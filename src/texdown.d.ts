@@ -1,18 +1,16 @@
-import * as moo from 'moo';
 export declare type H = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 export declare type Format = 'b' | 'i' | 'u';
 export declare type ElementType = H | Format | 'p' | 'ul' | 'ol' | 'li';
 export declare type Element = {
     type: ElementType;
-    attr: {
-        [key: string]: any;
-    };
+    token: string;
+    data?: any;
 };
 export declare type Env = 'center';
 export declare type Cmd = 'vspace';
-export declare type Token = H | Format | 'uli' | 'oli' | 'a' | 'img' | '$' | '$$' | 'env' | 'cmd' | 'tikz' | 'esc' | 'txt' | 'blank' | 'eol' | 'hr';
+export declare type TokenType = H | Format | 'uli' | 'oli' | 'a' | 'img' | '$' | '$$' | 'env' | 'cmd' | 'tikz' | 'esc' | 'txt' | 'blank' | 'eol' | 'hr';
 export declare type action = {
-    [key in Token]: (tkn: moo.Token) => void;
+    [key in TokenType]: () => void;
 };
 export interface Renderer {
     startElement: (el: Element, id: number) => void;
