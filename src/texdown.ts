@@ -1,12 +1,9 @@
 import * as moo from 'moo';
 
 export type H = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
-export type Format = | 'b' | 'i' | 'u'
-export type ElementType =
-    H | Format
-    | 'p'
-    | 'ul' | 'ol'
-    | 'li'
+export type ElementTypeBlock = H | 'p' | 'ul' | 'ol' | 'li'
+export type ElementTypeInline = 'b' | 'i' | 'u'
+export type ElementType = ElementTypeBlock | ElementTypeInline
 
 export type Element = {
     type: ElementType
@@ -14,11 +11,8 @@ export type Element = {
     , data?: any
 }
 
-export type Env = 'center'
-export type Cmd = 'vspace'
-
 export type TokenType =
-    H | Format
+    H | ElementTypeInline
     | 'uli' | 'oli'
     | 'a' | 'img'
     | '$' | '$$'
@@ -61,9 +55,9 @@ const tokens: { [key in TokenType]: any } = {
 export interface Renderer {
     startElement: (el: Element, id: number) => void
     endElement: (el: Element) => void
-    startEnv: (type: Env) => void
-    endEnv: (type: Env) => void
-    cmd: (name: Cmd, arg: string) => void
+    startEnv: (name: string) => void
+    endEnv: (name: string) => void
+    cmd: (name: string, arg: string) => void
     esc: (val: string) => void
     txt: (val: string) => void
     hr: () => void
@@ -78,45 +72,45 @@ export interface Renderer {
 }
 
 export function texDown(markDown: string, ...renderers: Renderer[]) {
-    let currentToken: moo.Token
     const lexer = moo.compile(tokens)
-
     lexer.reset(markDown)
 
-    const elements: Element[] = []
-    const envs: { [env in Env]: boolean } = {
-        center: false
-    }
-
     let id = 0
-    const topElement = () => elements[elements.length - 1]
+    let currentToken: moo.Token
+
+    const stack: Element[] = []
+    const env: { [env: string]: boolean } = {}
+
+    const topElement = () => stack[stack.length - 1]
 
     const popElement = () => {
-        const el = elements.pop() as Element
+        const el = stack.pop() as Element
         renderers.forEach(r =>
             r.endElement(el)
         )
     }
 
-    const endEnv = (env: Env) => {
-        envs[env] = false
+    const endEnv = (name: string) => {
+        env[name] = false
         renderers.forEach(r =>
-            r.endEnv(env)
+            r.endEnv(name)
         )
     }
 
     const clearElements = () => {
-        while (elements.length) popElement()
+        while (stack.length) popElement()
     }
 
     const clearEnvs = () => {
         renderers.forEach(r => {
-            if (envs.center) r.endEnv('center')
+            Object.entries(env).forEach(([name, b]) => {
+                if (b) r.endEnv(name)
+            })
         })
     }
 
     const pushElement = (el: Element) => {
-        elements.push(el)
+        stack.push(el)
 
         renderers.forEach(r =>
             r.startElement(el, id)
@@ -125,10 +119,10 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         return el
     }
 
-    const startEnv = (env: Env) => {
-        envs[env] = true
+    const startEnv = (e: string) => {
+        env[e] = true
         renderers.forEach(r =>
-            r.startEnv(env)
+            r.startEnv(e)
         )
     }
 
@@ -141,11 +135,11 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
     }
 
     const format = (type: ElementType) => {
-        if (elements.length && topElement().type === type) {
+        if (stack.length && topElement().type === type) {
             popElement()
             return
         }
-        if (!elements.length)
+        if (!stack.length)
             pushElement({
                 type: 'p'
                 , token: ''
@@ -167,7 +161,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
                 && te.data <= nestLevel
         }
 
-        while (elements.length && !matchingList()) {
+        while (stack.length && !matchingList()) {
             popElement()
         }
 
@@ -194,9 +188,16 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
     }
 
     const reCmd = /\\(\w+)\{([^}]*)\}/
-    const extractCmd = (cmd: string): [Cmd, string] => {
+    const extractCmd = (cmd: string): [string, string] => {
         const res = reCmd.exec(cmd) as RegExpExecArray
-        return [res[1] as Cmd, res[2]]
+        return [res[1], res[2]]
+    }
+
+    const pushParIfEmpty = () => {
+        if (!stack.length) pushElement({
+            type: 'p'
+            , token: ''
+        })
     }
 
     const actions: action = {
@@ -214,20 +215,14 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         , oli: () => li('ol')
         // LINK
         , a: () => {
-            if (!elements.length) pushElement({
-                type: 'p'
-                , token: ''
-            })
+            pushParIfEmpty()
             const [title, href] = extractLink(currentToken.text)
             renderers.forEach(r =>
                 r.a(title, href, id)
             )
         }
         , img: () => {
-            if (!elements.length) pushElement({
-                type: 'p'
-                , token: ''
-            })
+            pushParIfEmpty()
             const [title, href] = extractLink(currentToken.text)
             renderers.forEach(r =>
                 r.img(title, href, id)
@@ -243,10 +238,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
             )
         }
         , $: () => {
-            if (!elements.length) pushElement({
-                type: 'p'
-                , token: ''
-            })
+            pushParIfEmpty()
             const txt = currentToken.text
             const tex = txt.substring(1, txt.length - 1)
             renderers.forEach(
@@ -255,12 +247,13 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         }
         // ENV + CMD
         , env: () => {
-            const env = currentToken.text.substr(1) as Env
             clearElements()
-            if (envs[env]) endEnv(env)
-            else startEnv(env)
+            const e = currentToken.text.substr(1)
+            if (env[e]) endEnv(e)
+            else startEnv(e)
         }
         , cmd: () => {
+            clearElements()
             const [name, arg] = extractCmd(currentToken.text)
             renderers.forEach(r => {
                 r.cmd(name, arg)
@@ -268,6 +261,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         }
         // TIKZ
         , tikz: () => {
+            clearElements()
             renderers.forEach(r =>
                 r.tikz(currentToken.text, id)
             )
@@ -287,10 +281,7 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         }
         // VAL
         , txt: () => {
-            if (!elements.length) pushElement({
-                type: 'p'
-                , token: ''
-            })
+            pushParIfEmpty()
             renderers.forEach(r =>
                 r.txt(currentToken.text)
             )
@@ -302,14 +293,21 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
                 r.blank()
             )
         }
+
         , eol: () => {
+            const multiline = ['p', 'li']
+
+            const te = topElement()
+            if (te && multiline.includes(te.type)) {
+                renderers.forEach(
+                    r => r.eol()
+                )
+            }
+
             while (
-                elements.length
-                && topElement().type !== 'p'
-                && topElement().type !== 'li') popElement()
-            renderers.forEach(
-                r => r.eol()
-            )
+                stack.length
+                && !multiline.includes(topElement().type))
+                popElement()
         }
     }
 

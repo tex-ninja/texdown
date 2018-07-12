@@ -1,20 +1,20 @@
 import 'mocha';
 import { expect } from 'chai';
-import { texDown, Renderer, Env, Cmd, Element } from '../src/texdown';
+import { texDown, Renderer, Element } from '../src/texdown';
 
 
 class Test implements Renderer {
     public res = ''
 
-    startEnv = (type: Env) => {
-        this.res += `<div align='center'>`
+    startEnv = (name: string) => {
+        this.res += `<div class='${name}'>`
     }
 
-    endEnv = (type: Env) => {
+    endEnv = (name: string) => {
         this.res += `</div>`
     }
 
-    cmd = (name: Cmd, arg: string) => {
+    cmd = (name: string, arg: string) => {
         this.res += `\\${name}\{${arg}\}`
     }
 
@@ -213,7 +213,7 @@ describe('texDown', () => {
         const renderer = new Test()
         texDown(center, renderer)
         expect(renderer.res).to.eq(
-            `<div align='center'></div>`
+            `<div class='center'></div>`
         )
     })
 
