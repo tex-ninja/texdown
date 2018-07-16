@@ -295,19 +295,22 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         }
 
         , eol: () => {
+            console.log('texdown', 'eol')
             const multiline = ['p', 'li']
 
+            while (
+                stack.length
+                && !multiline.includes(topElement().type))
+                popElement()
+
             const te = topElement()
+            console.log('texdown', te)
             if (te && multiline.includes(te.type)) {
                 renderers.forEach(
                     r => r.eol()
                 )
             }
 
-            while (
-                stack.length
-                && !multiline.includes(topElement().type))
-                popElement()
         }
     }
 
