@@ -29,4 +29,4 @@ export interface Renderer {
     tikz: (tikz: string, id: number) => void;
     done: () => void;
 }
-export declare function texDown(markDown: string, ...renderers: Renderer[]): void;
+export declare function texDown(src: string, ...renderers: Renderer[]): void;
