@@ -71,9 +71,9 @@ export interface Renderer {
     done: () => void
 }
 
-export function texDown(markDown: string, ...renderers: Renderer[]) {
+export function texDown(src: string, ...renderers: Renderer[]) {
     const lexer = moo.compile(tokens)
-    lexer.reset(markDown)
+    lexer.reset(src.replace(/\r/g, ''))
 
     let id = 0
     let currentToken: moo.Token
@@ -295,7 +295,6 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
         }
 
         , eol: () => {
-            console.log('texdown', 'eol')
             const multiline = ['p', 'li']
 
             while (
@@ -304,7 +303,6 @@ export function texDown(markDown: string, ...renderers: Renderer[]) {
                 popElement()
 
             const te = topElement()
-            console.log('texdown', te)
             if (te && multiline.includes(te.type)) {
                 renderers.forEach(
                     r => r.eol()
